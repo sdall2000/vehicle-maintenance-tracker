@@ -1,0 +1,92 @@
+{
+    "vehicleModels": {
+        "1": {
+            "name": "Toyota"
+        },
+        "2": {
+            "name": "Nissan"
+        },
+        "3": {
+            "name": "Honda"
+        }
+    },
+    "vehicleModelMakes": {
+        "1": {
+            "vehicleModelId": "1",
+            "name": "RAV4"
+        },
+        "2": {
+            "vehicleModelId": "2",
+            "name": "Altima"
+        },
+        "3": {
+            "vehicleModelId": "3",
+            "name": "Civic"
+        }
+    },
+    "vehicles": {
+        "1": {
+            "vehicleModelMakeId": "1",
+            "year": 2016
+        },
+        "2": {
+            "vehicleModelMakeId": "2",
+            "year": 2018
+        },
+        "3": {
+            "vehicleModelMakeId": "3",
+            "year": 2014
+        }
+    },
+    "maintenanceItem": {
+        "1": {
+            "name": "Oil Change"
+        },
+        "2": {
+            "name": "Tire Rotation"
+        },
+        "3": {
+            "name": "Replace Air Filter"
+        },
+        "4": {
+            "name": "Replace Wiper Blades"
+        },
+        "5": {
+            "name": "Transmission Fluid Change"    
+        }
+    },
+    "maintenanceSchedule": {
+        "1": [
+            {"maintenanceItemId": "1", "mileageInterval": 3500, "dayInterval": 90},
+            {"maintenanceItemId": "2", "mileageInterval": 7000},
+            {"maintenanceItemId": "3", "mileageInterval": 10000},
+            {"maintenanceItemId": "4", "mileageInterval": 12500, "dayInterval": 180},
+            {"maintenanceItemId": "5", "mileageInterval": 30000}
+        ],
+        "2": [
+            {"maintenanceItemId": "1", "mileageInterval": 5000, "dayInterval": 100},
+            {"maintenanceItemId": "2", "mileageInterval": 7500},
+            {"maintenanceItemId": "3", "mileageInterval": 12500},
+            {"maintenanceItemId": "4", "mileageInterval": 15000},
+            {"maintenanceItemId": "5", "mileageInterval": 50000}
+        ],
+        "3": [
+            {"maintenanceItemId": "1", "mileageInterval": 3000, "dayInterval": 90},
+            {"maintenanceItemId": "2", "mileageInterval": 6000},
+            {"maintenanceItemId": "3", "mileageInterval": 7500},
+            {"maintenanceItemId": "4", "mileageInterval": 10000},
+            {"maintenanceItemId": "5", "mileageInterval": 45000}
+        ]
+    },
+    "vehicleMaintenanceSchedule": {
+        "1": {
+            "maintenanceScheduleId": "1"
+        },
+        "2": {
+            "maintenanceScheduleId": "2"
+        },
+        "3": {
+            "maintenanceScheduleId": "2"
+        }
+    }
+}
