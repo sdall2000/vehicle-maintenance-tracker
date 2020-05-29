@@ -11,4 +11,22 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="vehicle_label">Vehicle</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="tab_text_dashboard">Dashboard</string>
+    <string name="tab_text_history">History</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="mileage_label">Mileage:</string>
+    <string name="average_label">You average</string>
+    <string name="reported_label">Reported:</string>
+    <string name="mileage_average_label">miles per year</string>
+    <string name="button_report_mileage">Report Mileage</string>
+    <string name="service_notification_label">Service Notifications</string>
+    <string name="button_enter_service">Enter Service</string>
+    <string name="title_activity_mileage">Mileage</string>
+    <string name="enter_mileage_label">Enter Mileage:</string>
+    <string name="effective_date_label">Effective Date:</string>
+    <string name="last_mileage_label">Previous Mileage:</string>
+    <string name="submit_label">Submit</string>
 </resources>
