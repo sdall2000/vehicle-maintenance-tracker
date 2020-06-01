@@ -1,17 +1,24 @@
 package android.example.vehiclemaintenancetracker;
 
 import android.content.Intent;
+import android.example.vehiclemaintenancetracker.data.AppDatabase;
+import android.example.vehiclemaintenancetracker.data.DateConverter;
+import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.databinding.FragmentDashboardBinding;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import java.util.List;
 
 
 /**
@@ -24,6 +31,8 @@ public class DashboardFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private static final long MS_PER_YEAR = 1_000 * 86_400 * 365;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -76,9 +85,42 @@ public class DashboardFragment extends Fragment {
 
         // TODO pull from database.
         binding.textViewVehicle.setText("2012 Honda Civic");
-        binding.textViewMileage.setText("78,123");
-        binding.textViewMileageReported.setText("4/20/2020");
-        binding.textViewMileageAverage.setText("11,563");
+
+        LiveData<List<MileageEntry>> mileage = AppDatabase.getInstance(getContext()).getMileageEntryDao().getAllLiveData();
+
+        mileage.observe(getViewLifecycleOwner(), new Observer<List<MileageEntry>>() {
+            @Override
+            public void onChanged(List<MileageEntry> mileageEntries) {
+                if (mileageEntries.size() != 0) {
+                    MileageEntry mostRecent = mileageEntries.get(0);
+
+                    binding.textViewMileage.setText(Integer.toString(mostRecent.getMileage()));
+                    binding.textViewMileageReported.setText(DateConverter.convertDateToString(getContext(), mostRecent.getDate()));
+
+                    // We need at least two mileage entries to calculate the average.
+                    if (mileageEntries.size() >= 2) {
+                        MileageEntry oldest = mileageEntries.get(mileageEntries.size() - 1);
+
+                        long deltaMs = mostRecent.getDate().getTime() - oldest.getDate().getTime();
+
+                        if (deltaMs > 0) {
+                            // Calculate average miles per year.
+                            int milesTravelled = mostRecent.getMileage() - oldest.getMileage();
+
+                            long averagePerYear = Math.round((double) deltaMs / MS_PER_YEAR * milesTravelled);
+
+                            binding.textViewMileageAverage.setText(Long.toString(averagePerYear));
+                        }
+                    } else {
+                        binding.textViewMileageAverage.setText("");
+                    }
+                } else {
+                    binding.textViewMileage.setText("");
+                    binding.textViewMileageReported.setText("");
+                    binding.textViewMileageAverage.setText("");
+                }
+            }
+        });
 
         binding.buttonReportMileage.setOnClickListener(new View.OnClickListener() {
             @Override

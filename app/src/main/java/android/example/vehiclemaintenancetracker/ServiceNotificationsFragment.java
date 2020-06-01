@@ -1,20 +1,18 @@
 package android.example.vehiclemaintenancetracker;
 
-import android.app.Service;
+import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -91,13 +89,11 @@ public class ServiceNotificationsFragment extends Fragment {
 
         private final ServiceNotificationsFragment parent;
         private final List<ServiceNotification> notifications;
-        private final DateFormat dateFormat;
 
         public NotificationsRecylerViewAdapter(ServiceNotificationsFragment parent,
                                                List<ServiceNotification> notifications) {
             this.parent = parent;
             this.notifications = notifications;
-            dateFormat = android.text.format.DateFormat.getDateFormat(parent.getContext());
         }
 
         @NonNull
@@ -121,7 +117,7 @@ public class ServiceNotificationsFragment extends Fragment {
             }
 
             if (notification.getDateDue() != null) {
-                holder.dateTextView.setText(dateFormat.format(notification.getDateDue()));
+                holder.dateTextView.setText(DateConverter.convertDateToString(parent.getContext(), notification.getDateDue()));
             } else {
                 holder.dateTextView.setText("");
             }

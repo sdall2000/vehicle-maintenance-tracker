@@ -29,4 +29,9 @@
     <string name="effective_date_label">Effective Date:</string>
     <string name="last_mileage_label">Previous Mileage:</string>
     <string name="submit_label">Submit</string>
+    <string name="last_mileage_entered_label">Last mileage was %1$d on %2$s</string>
+    <string name="validation_error_unhandled">Unhandled validation error</string>
+    <string name="validation_required_field">Field may not be empty</string>
+    <string name="validation_invalid_date">Date is invalid</string>
+    <string name="validation_invalid_mileage">Mileage is invalid</string>
 </resources>
