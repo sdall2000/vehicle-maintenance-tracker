@@ -11,7 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -37,7 +38,7 @@ public class AppDatabaseTest {
 
     @Test
     public void writeThenRead() {
-        MileageEntry mileageEntry = new MileageEntry(30_000, "1967/10/17");
+        MileageEntry mileageEntry = new MileageEntry(30_000, createDate(2020, 10, 10));
         mileageEntryDao.insert(mileageEntry);
 
         List<MileageEntry> mileageEntries = mileageEntryDao.getAll();
@@ -54,26 +55,40 @@ public class AppDatabaseTest {
 
     @Test
     public void testGetLatestMileage() {
-        MileageEntry mileageEntry1 = new MileageEntry(30_000, "1967/10/17");
-        MileageEntry mileageEntry2 = new MileageEntry(30_002, "2020/10/17");
-        MileageEntry mileageEntry3 = new MileageEntry(30_001, "1968/10/17");
+        MileageEntry mileageEntry1 = new MileageEntry(30_000, createDate(2010, 10, 5));
+        MileageEntry latestMileageEntry = new MileageEntry(30_002, createDate(2019, 9, 4));
+        MileageEntry mileageEntry3 = new MileageEntry(30_001, createDate(2012, 8, 3));
 
         mileageEntryDao.insert(mileageEntry1);
-        mileageEntryDao.insert(mileageEntry2);
+        mileageEntryDao.insert(latestMileageEntry);
         mileageEntryDao.insert(mileageEntry3);
 
         List<MileageEntry> mileageEntries = mileageEntryDao.getAll();
 
         assertEquals(3, mileageEntries.size());
 
-        MileageEntry latestMileageEntry = mileageEntryDao.getMostRecentMileage();
+        MileageEntry latestMileageEntryCompare = mileageEntryDao.getMostRecentMileage();
 
-        assertEquals(mileageEntry2.getDate(), latestMileageEntry.getDate());
-        assertEquals(mileageEntry2.getMileage(), latestMileageEntry.getMileage());
+        assertEquals(latestMileageEntry.getDate(), latestMileageEntryCompare.getDate());
+        assertEquals(latestMileageEntry.getMileage(), latestMileageEntryCompare.getMileage());
 
         mileageEntryDao.delete(mileageEntry1);
-        mileageEntryDao.delete(mileageEntry2);
+        mileageEntryDao.delete(latestMileageEntry);
         mileageEntryDao.delete(mileageEntry3);
+    }
+
+    // Helper method to create a Date without the time component.
+    private Date createDate(int year, int month, int dayOfMonth) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month);
+        calendar.set(Calendar.DATE, dayOfMonth);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
     }
 
     @Test
