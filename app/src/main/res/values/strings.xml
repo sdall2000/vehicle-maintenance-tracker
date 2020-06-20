@@ -34,4 +34,9 @@
     <string name="validation_required_field">Field may not be empty</string>
     <string name="validation_invalid_date">Date is invalid</string>
     <string name="validation_invalid_mileage">Mileage is invalid</string>
+    <string name="title_activity_vehicle_selection">VehicleSelectionActivity</string>
+    <string name="year_label">Year</string>
+    <string name="make_label">Make</string>
+    <string name="model_label">Model</string>
+    <string name="button_select_vehicle">Select Vehicle</string>
 </resources>
