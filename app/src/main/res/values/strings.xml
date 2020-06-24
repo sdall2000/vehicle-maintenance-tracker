@@ -39,4 +39,5 @@
     <string name="make_label">Make</string>
     <string name="model_label">Model</string>
     <string name="button_select_vehicle">Select Vehicle</string>
+    <string name="no_vehicle_selected">No vehicle selected</string>
 </resources>

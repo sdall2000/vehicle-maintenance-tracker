@@ -3,9 +3,12 @@ package android.example.vehiclemaintenancetracker;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
+import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
+import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentDashboardBinding;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
+
+import timber.log.Timber;
 
 
 /**
@@ -91,8 +96,7 @@ public class DashboardFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // TODO pull from database.
-        binding.textViewVehicle.setText("2012 Honda Civic");
+        setVehicleLabel();
 
         LiveData<List<MileageEntry>> mileage = AppDatabase.getInstance(getContext()).getMileageEntryDao().getAllLiveData();
 
@@ -144,6 +148,33 @@ public class DashboardFragment extends Fragment {
         ft.commit();
 
         queryFirebase();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setVehicleLabel();
+        Timber.d("DashboardFragment onResume");
+    }
+
+    private void setVehicleLabel() {
+        String selectedVehicleUid = AppDatabase.getVehicleUid(getActivity());
+        if (TextUtils.isEmpty(selectedVehicleUid)) {
+            binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
+        } else {
+            FirebaseDatabaseUtils.getInstance().getVehicle(selectedVehicleUid, new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
+                @Override
+                public void onDataReady(Vehicle data) {
+                    String vehicleText = String.format("%d %s %s", data.getYear(), data.getMake(), data.getModel());
+                    binding.textViewVehicle.setText(vehicleText);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
+                }
+            });
+        }
     }
 
     private void queryFirebase() {
