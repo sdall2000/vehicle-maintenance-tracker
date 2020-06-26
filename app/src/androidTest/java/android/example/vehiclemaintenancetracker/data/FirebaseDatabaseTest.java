@@ -1,5 +1,6 @@
 package android.example.vehiclemaintenancetracker.data;
 
+import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
@@ -76,8 +78,8 @@ public class FirebaseDatabaseTest {
 
         latch.await(10, TimeUnit.SECONDS);
     }
-    @Test
 
+    @Test
     public void testHelperGetVehicle() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
@@ -120,6 +122,55 @@ public class FirebaseDatabaseTest {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 fail("Could not get years");
+                latch.countDown();
+            }
+        });
+
+        latch.await(10, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testLoadMaintenanceSchedule() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule("1", new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
+            @Override
+            public void onDataReady(Set<MaintenanceScheduleEntry> data) {
+                assertEquals(5, data.size());
+                MaintenanceScheduleEntry[] entries = new MaintenanceScheduleEntry[data.size()];
+                entries = data.toArray(entries);
+
+                assertEquals("1", entries[0].getMaintenanceItemId());
+                assertEquals("Oil Change", entries[0].getMaintenance());
+                assertEquals(3500, (long) entries[0].getMileageInterval());
+                assertEquals(90, (long) entries[0].getDayInterval());
+
+                assertEquals("2", entries[1].getMaintenanceItemId());
+                assertEquals("Tire Rotation", entries[1].getMaintenance());
+                assertEquals(7000, (long) entries[1].getMileageInterval());
+                assertNull(entries[1].getDayInterval());
+
+                assertEquals("3", entries[2].getMaintenanceItemId());
+                assertEquals("Replace Air Filter", entries[2].getMaintenance());
+                assertEquals(10000, (long) entries[2].getMileageInterval());
+                assertNull(entries[2].getDayInterval());
+
+                assertEquals("4", entries[3].getMaintenanceItemId());
+                assertEquals("Replace Wiper Blades", entries[3].getMaintenance());
+                assertEquals(12500, (long) entries[3].getMileageInterval());
+                assertEquals(180, (long) entries[3].getDayInterval());
+
+                assertEquals("5", entries[4].getMaintenanceItemId());
+                assertEquals("Transmission Fluid Change", entries[4].getMaintenance());
+                assertEquals(30000, (long) entries[4].getMileageInterval());
+                assertNull(entries[4].getDayInterval());
+
+                latch.countDown();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                fail("No bueno");
                 latch.countDown();
             }
         });
