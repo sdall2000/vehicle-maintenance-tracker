@@ -9,23 +9,17 @@ import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentDashboardBinding;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -38,20 +32,23 @@ import timber.log.Timber;
  * create an instance of this fragment.
  */
 public class DashboardFragment extends Fragment {
-    private static final String TAG = "DashboardFragment";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private static final long MS_PER_YEAR = 1_000 * 86_400 * 365;
+    private static final long MS_PER_YEAR = 1_000L * 86_400 * 365;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
     FragmentDashboardBinding binding;
+
+    // Cache the data so we don't have to refetch.
+    private String vehicleUid;
+    private Vehicle vehicle;
 
     public DashboardFragment() {
         // Required empty public constructor
@@ -96,7 +93,7 @@ public class DashboardFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setVehicleLabel();
+        processSelectedVehicle();
 
         LiveData<List<MileageEntry>> mileage = AppDatabase.getInstance(getContext()).getMileageEntryDao().getAllLiveData();
 
@@ -141,75 +138,56 @@ public class DashboardFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
-        // Insert service notifications fragment
-        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
-        ft.replace(R.id.service_notifications_placeholder, new ServiceNotificationsFragment());
-        ft.commit();
-
-        queryFirebase();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        setVehicleLabel();
+        processSelectedVehicle();
         Timber.d("DashboardFragment onResume");
     }
 
-    private void setVehicleLabel() {
-        String selectedVehicleUid = AppDatabase.getVehicleUid(getActivity());
-        if (TextUtils.isEmpty(selectedVehicleUid)) {
-            binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
-        } else {
-            FirebaseDatabaseUtils.getInstance().getVehicle(selectedVehicleUid, new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
-                @Override
-                public void onDataReady(Vehicle data) {
-                    String vehicleText = String.format("%d %s %s", data.getYear(), data.getMake(), data.getModel());
-                    binding.textViewVehicle.setText(vehicleText);
-                }
+    private void processSelectedVehicle() {
+        final String selectedVehicleUid = AppDatabase.getVehicleUid(getActivity());
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
-                }
-            });
+        // Make sure a vehicle is selected.
+        if (!TextUtils.isEmpty(selectedVehicleUid)) {
+
+            // See if the vehicle uid has not already been set, or, if it doesn't equal the selected vehicle uid.
+            // In those cases, we need to query for the vehicle.
+            if (TextUtils.isEmpty(vehicleUid) || !vehicleUid.equals(selectedVehicleUid)) {
+
+                FirebaseDatabaseUtils.getInstance().getVehicle(selectedVehicleUid, new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
+                    @Override
+                    public void onDataReady(Vehicle data) {
+                        vehicleUid = selectedVehicleUid;
+                        vehicle = data;
+
+                        String vehicleText = String.format("%d %s %s", data.getYear(), data.getMake(), data.getModel());
+                        binding.textViewVehicle.setText(vehicleText);
+
+                        loadServiceNotificationsFragment(vehicle.getMaintenanceScheduleUid());
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
+                    }
+                });
+            }
+        } else {
+            binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
         }
     }
 
-    private void queryFirebase() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("vehicleModels");
+    private void loadServiceNotificationsFragment(String maintenanceScheduleUid) {
 
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    Log.d(TAG, ds.getKey() + ", " + ds.getChildren().iterator().next().getValue());
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG, "Failed to read value");
-            }
-        });
-
-        DatabaseReference myRefYears = database.getReference("vehicles");
-
-        myRefYears.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    Log.d(TAG, ds.getKey() + ", " + ds.getChildren().iterator().next().getValue());
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG, "Failed to read value");
-            }
-        });
+        // TODO handle case where the vehicle uid has changed.
+        // Insert service notifications fragment
+        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+        ServiceNotificationsFragment serviceNotificationsFragment = ServiceNotificationsFragment.newInstance(maintenanceScheduleUid);
+        ft.replace(R.id.service_notifications_placeholder, serviceNotificationsFragment);
+        ft.commit();
     }
 
     @Override

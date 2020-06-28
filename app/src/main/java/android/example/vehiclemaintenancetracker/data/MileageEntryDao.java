@@ -20,7 +20,7 @@ public interface MileageEntryDao {
     MileageEntry getMostRecentMileage();
 
     @Insert
-    void insert(MileageEntry mileageEntry);
+    long insert(MileageEntry mileageEntry);
 
     @Delete
     void delete(MileageEntry mileageEntry);

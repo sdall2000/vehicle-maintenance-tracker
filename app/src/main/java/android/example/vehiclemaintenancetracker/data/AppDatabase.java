@@ -12,16 +12,18 @@ import androidx.room.TypeConverters;
 
 import timber.log.Timber;
 
-@Database(entities = {MileageEntry.class}, version = 1)
+@Database(entities = {MileageEntry.class, MaintenanceEntry.class}, version = 1)
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DB_NAME = "vehicleMaintenanceDatabase.db";
     public static final String SELECTED_VEHICLE_UID_KEY = "selectedVehicleUid";
+    public static final String MAINTENANCE_SCHEDULE_UID_KEY = "maintenanceScheduleUid";
 
     // This class holds the singleton.
     private static volatile AppDatabase instance;
 
     public abstract MileageEntryDao getMileageEntryDao();
+    public abstract MaintenanceDao getMaintenanceDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {

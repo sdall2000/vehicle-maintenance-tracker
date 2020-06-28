@@ -1,6 +1,9 @@
 package android.example.vehiclemaintenancetracker;
 
+import android.content.Intent;
+import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
+import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,14 +28,9 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class ServiceNotificationsFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    FragmentServiceNotificationsBinding binding;
+    private String maintenanceScheduleUid;
 
     public ServiceNotificationsFragment() {
         // Required empty public constructor
@@ -41,16 +40,13 @@ public class ServiceNotificationsFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param maintenanceScheduleUid the maintenance uid
      * @return A new instance of fragment ServiceNotificationsFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static ServiceNotificationsFragment newInstance(String param1, String param2) {
+    public static ServiceNotificationsFragment newInstance(String maintenanceScheduleUid) {
         ServiceNotificationsFragment fragment = new ServiceNotificationsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,8 +55,7 @@ public class ServiceNotificationsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            maintenanceScheduleUid = getArguments().getString(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY);
         }
     }
 
@@ -68,11 +63,28 @@ public class ServiceNotificationsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_service_notifications, container, false);
-        View recyclerView = view.findViewById(R.id.recyclerView);
-        setupRecyclerView((RecyclerView) recyclerView);
+        binding = FragmentServiceNotificationsBinding.inflate(inflater, container, false);
 
-        return view;
+//        View view = inflater.inflate(R.layout.fragment_service_notifications, container, false);
+
+//        View recyclerView = view.findViewById(R.id.recyclerView);
+        setupRecyclerView(binding.recyclerView);
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        binding.buttonEnterService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MaintenanceActivity.class);
+                intent.putExtra(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
+                startActivity(intent);
+            }
+        });
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -99,6 +111,7 @@ public class ServiceNotificationsFragment extends Fragment {
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.notification_list_content, parent, false);
             return new ViewHolder(view);

@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".VehicleChooserActivity"></activity>
+        <activity android:name=".MaintenanceActivity"></activity>
+        <activity android:name=".VehicleChooserActivity" />
         <activity
             android:name=".VehicleSelectionActivity"
             android:label="@string/title_activity_vehicle_selection"

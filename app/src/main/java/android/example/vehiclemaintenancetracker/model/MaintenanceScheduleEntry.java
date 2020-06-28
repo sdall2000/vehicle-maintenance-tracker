@@ -36,4 +36,10 @@ public class MaintenanceScheduleEntry {
     public Integer getMileageInterval() {
         return mileageInterval;
     }
+
+    // This override is mainly to support showing just the maintenance text in the spinner.
+    @Override
+    public String toString() {
+        return maintenance;
+    }
 }
