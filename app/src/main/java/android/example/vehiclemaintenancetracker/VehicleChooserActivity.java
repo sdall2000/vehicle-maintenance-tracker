@@ -9,18 +9,29 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.database.DatabaseError;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import timber.log.Timber;
 
 public class VehicleChooserActivity extends AppCompatActivity {
+
+    private DateFormat dateFormat;
+
+    // Will populate for easy reference
+    private EditText editTextDate;
+    private EditText editTextMileage;
 
     private ActivityVehicleChooserBinding binding;
 
@@ -34,6 +45,11 @@ public class VehicleChooserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityVehicleChooserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        dateFormat = android.text.format.DateFormat.getDateFormat(this);
+
+        editTextDate = binding.editTextDate;
+        editTextMileage = binding.editTextMileage;
 
         binding.spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -78,35 +94,54 @@ public class VehicleChooserActivity extends AppCompatActivity {
         binding.buttonSelectVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Timber.d("onClick");
-                FirebaseDatabaseUtils.getInstance().getVehicleUid(vehicleYear, vehicleMake, vehicleModel, new FirebaseDatabaseUtils.HelperListener<String>() {
-                    @Override
-                    public void onDataReady(String data) {
-                        Timber.d("Got vehicle id %s", data);
-                        Intent intent = new Intent();
-                        intent.putExtra(AppDatabase.SELECTED_VEHICLE_UID_KEY, data);
-                        setResult(RESULT_OK, intent);
-                        finish();
-                    }
+                if (inputValid()) {
+                    String dateString = editTextDate.getText().toString();
+                    String mileageString = editTextMileage.getText().toString();
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Timber.e("Failed to get vehicle uid: %s", databaseError.getMessage());
-                        setResult(RESULT_CANCELED);
-                        finish();
+                    try {
+                        final Date date = dateFormat.parse(dateString);
+                        final int mileage = Integer.parseInt(mileageString);
+
+                        Timber.d("onClick");
+                        FirebaseDatabaseUtils.getInstance().getVehicleUid(vehicleYear, vehicleMake, vehicleModel, new FirebaseDatabaseUtils.HelperListener<String>() {
+                            @Override
+                            public void onDataReady(String data) {
+                                Timber.d("Got vehicle id %s", data);
+
+                                AppDatabase.setVehicleUid(VehicleChooserActivity.this, data);
+                                AppDatabase.setStartingMileage(VehicleChooserActivity.this, mileage);
+                                AppDatabase.setStartingDateEpochMs(VehicleChooserActivity.this, date.getTime());
+
+                                Intent intent = new Intent();
+                                setResult(RESULT_OK, intent);
+                                finish();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                Timber.e("Failed to get vehicle uid: %s", databaseError.getMessage());
+                                setResult(RESULT_CANCELED);
+                                finish();
+                            }
+                        });
+                    } catch (ParseException e) {
+                        // Should never happen because we always validate the fields before using them.
+                        Toast.makeText(VehicleChooserActivity.this, R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
                     }
-                });
+                }
             }
         });
 
-        String selectedVehicleUid = null;
+        String selectedVehicleUid = AppDatabase.getVehicleUid(this);
 
-        // See if a vehicle has already been selected.
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            String value = extras.getString(AppDatabase.SELECTED_VEHICLE_UID_KEY);
-            if (value != null) {
-                selectedVehicleUid = value;
+        if (selectedVehicleUid != null) {
+            // If the vehicle uid has been set, then the starting mileage/date will be as well.
+            editTextMileage.setText(Integer.toString(AppDatabase.getStartingMileage(this)));
+
+            long epochMs = AppDatabase.getStartingDateEpochMs(this);
+            if (epochMs != 0) {
+                Date date = new Date(epochMs);
+                editTextDate.setText(dateFormat.format(date));
             }
         }
 
@@ -224,5 +259,41 @@ public class VehicleChooserActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private boolean inputValid() {
+        boolean inputValid = true;
+
+        String dateString = editTextDate.getText().toString();
+        String mileageString = editTextMileage.getText().toString();
+
+        editTextDate.setError(null);
+        editTextMileage.setError(null);
+
+        if (dateString.isEmpty()) {
+            editTextDate.setError(getString(R.string.validation_required_field));
+            inputValid = false;
+        } else {
+            try {
+                dateFormat.parse(dateString);
+            } catch (ParseException e) {
+                editTextDate.setError(getString(R.string.validation_invalid_date));
+                inputValid = false;
+            }
+        }
+
+        if (mileageString.isEmpty()) {
+            editTextMileage.setError(getString(R.string.validation_required_field));
+            inputValid = false;
+        } else {
+            try {
+                Integer.parseInt(mileageString);
+            } catch (NumberFormatException e) {
+                editTextMileage.setError(getString(R.string.validation_invalid_mileage));
+                inputValid = false;
+            }
+        }
+
+        return inputValid;
     }
 }

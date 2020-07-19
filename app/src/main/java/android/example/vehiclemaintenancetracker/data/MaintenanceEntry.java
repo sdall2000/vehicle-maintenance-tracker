@@ -77,4 +77,8 @@ public class MaintenanceEntry {
     public Double getCost() {
         return cost;
     }
+
+    public MileageEntry getMileageEntry() {
+        return mileageEntry;
+    }
 }

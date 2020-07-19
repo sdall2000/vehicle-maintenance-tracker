@@ -38,10 +38,12 @@
     <string name="year_label">Year</string>
     <string name="make_label">Make</string>
     <string name="model_label">Model</string>
-    <string name="button_select_vehicle">Select Vehicle</string>
+    <string name="button_select_vehicle">Submit</string>
     <string name="no_vehicle_selected">No vehicle selected</string>
     <string name="maintenance_performed_label">Maintenance Performed:</string>
     <string name="date_performed_label">Date Performed:</string>
     <string name="provider_label">Provider:</string>
     <string name="cost_label">Cost:</string>
+    <string name="start_mileage_label">Starting Mileage:</string>
+    <string name="start_date_label">Starting Date:</string>
 </resources>

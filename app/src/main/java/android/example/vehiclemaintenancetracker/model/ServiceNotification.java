@@ -6,11 +6,13 @@ public class ServiceNotification {
     private String service;
     private Integer mileageDue;
     private Date dateDue;
+    private Status status;
 
-    public ServiceNotification(String service, Integer mileageDue, Date dateDue) {
+    public ServiceNotification(String service, Integer mileageDue, Date dateDue, Status status) {
         this.service = service;
         this.mileageDue = mileageDue;
         this.dateDue = dateDue;
+        this.status = status;
     }
 
     public String getService() {
@@ -23,5 +25,9 @@ public class ServiceNotification {
 
     public Date getDateDue() {
         return dateDue;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 }

@@ -60,7 +60,6 @@ public class MileageActivity extends AppCompatActivity {
         contentMileageBinding.buttonSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO validation.
                 if (inputValid()) {
                     String dateString = editTextDate.getText().toString();
                     String mileageString = editTextMileage.getText().toString();

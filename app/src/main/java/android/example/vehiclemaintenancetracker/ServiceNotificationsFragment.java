@@ -5,6 +5,7 @@ import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
+import android.example.vehiclemaintenancetracker.model.Status;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,9 +90,9 @@ public class ServiceNotificationsFragment extends Fragment {
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         List<ServiceNotification> notifications = new ArrayList<>();
-        notifications.add(new ServiceNotification("Change Oil", 35_000, new Date()));
-        notifications.add(new ServiceNotification("Check Tires", null, new Date()));
-        notifications.add(new ServiceNotification("Check Engine", 60_000, null));
+        notifications.add(new ServiceNotification("Change Oil", 35_000, new Date(), Status.Overdue));
+        notifications.add(new ServiceNotification("Check Tires", null, new Date(), Status.Upcoming));
+        notifications.add(new ServiceNotification("Check Engine", 60_000, null, Status.Upcoming));
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(new NotificationsRecylerViewAdapter(this, notifications));
     }

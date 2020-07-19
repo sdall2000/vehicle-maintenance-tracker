@@ -50,7 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="99dp" />
+        app:layout_constraintGuide_begin="123dp" />
 
     <Spinner
         android:id="@+id/spinnerMake"
@@ -76,11 +76,49 @@
         android:id="@+id/buttonSelectVehicle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="165dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="159dp"
+        android:layout_marginTop="28dp"
         android:text="@string/button_select_vehicle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextDate" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_mileage_label"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextMileage"
+        app:layout_constraintStart_toStartOf="@+id/textViewModel"
+        app:layout_constraintTop_toTopOf="@+id/editTextMileage" />
+
+    <EditText
+        android:id="@+id/editTextMileage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toBottomOf="@+id/spinnerModel" />
+
+    <TextView
+        android:id="@+id/textViewStartingDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_date_label"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextDate"
+        app:layout_constraintStart_toStartOf="@+id/textView8"
+        app:layout_constraintTop_toTopOf="@+id/editTextDate" />
+
+    <EditText
+        android:id="@+id/editTextDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="date"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline4"
+        app:layout_constraintTop_toBottomOf="@+id/editTextMileage" />
 </androidx.constraintlayout.widget.ConstraintLayout>

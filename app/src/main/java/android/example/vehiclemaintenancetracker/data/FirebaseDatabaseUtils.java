@@ -153,7 +153,9 @@ public class FirebaseDatabaseUtils {
                     Vehicle vehicle = v.getValue();
                     if (year == vehicle.getYear() && make.equals(vehicle.getMake()) && model.equals(vehicle.getModel())) {
                         listener.onDataReady(v.getKey());
-                        break;
+
+                        // We can exit this method since we found the matching vehicle and have notified the listener.
+                        return;
                     }
                 }
 

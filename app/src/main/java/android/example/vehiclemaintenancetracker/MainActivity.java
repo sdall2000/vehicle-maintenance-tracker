@@ -47,12 +47,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, VehicleChooserActivity.class);
-                String selectedVehicleUid = AppDatabase.getVehicleUid(MainActivity.this);
-
-                if (selectedVehicleUid != null) {
-                    intent.putExtra(AppDatabase.SELECTED_VEHICLE_UID_KEY, selectedVehicleUid);
-                }
-
                 startActivityForResult(intent, ACTIVITY_RESULT_REQUEST_CODE);
             }
         });
@@ -73,14 +67,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        String vehicleUidKey = "";
 
-        if (data != null && data.hasExtra(AppDatabase.SELECTED_VEHICLE_UID_KEY)) {
-            vehicleUidKey = data.getStringExtra(AppDatabase.SELECTED_VEHICLE_UID_KEY);
-            AppDatabase.setVehicleUid(this, vehicleUidKey);
+        if (resultCode == resultCode) {
+            // TODO the user clicked submit on the vehicle chooser activity.
+            // They may have selected a new vehicle, or set the starting mileage and/or
+            // starting date.
+
+            // Should trigger a service notifications refresh.
         }
 
-        Timber.d("onActivityResult requestCode: %d, resultCode: %d, vehicle key: %s",
-                requestCode, resultCode, vehicleUidKey);
+
+        Timber.d("onActivityResult requestCode: %d, resultCode: %d",
+                requestCode, resultCode);
     }
 }
