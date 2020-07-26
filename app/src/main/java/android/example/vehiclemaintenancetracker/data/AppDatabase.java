@@ -3,6 +3,7 @@ package android.example.vehiclemaintenancetracker.data;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.text.TextUtils;
 
 import androidx.room.Database;
@@ -43,6 +44,27 @@ public abstract class AppDatabase extends RoomDatabase {
         return instance;
     }
 
+    public static VehicleInfo getVehicleInfo(Activity activity) {
+        String vehicleUid = getVehicleUid(activity);
+        int startingMileage = getStartingMileage(activity);
+        long startingDateEpochMs = getStartingDateEpochMs(activity);
+
+        return new VehicleInfo(vehicleUid, startingMileage, startingDateEpochMs);
+    }
+
+    public static void setVehicleInfo(Activity activity, VehicleInfo vehicleInfo) {
+        if (vehicleInfo != null) {
+            setVehicleUid(activity, vehicleInfo.getVehicleUid());
+            setStartingMileage(activity, vehicleInfo.getStartingMileage());
+            setStartingDateEpochMs(activity, vehicleInfo.getStartingDateEpochMs());
+        } else {
+            // Pass nulls to clear settings.
+            setVehicleUid(activity, null);
+            setStartingMileage(activity, null);
+            setStartingDateEpochMs(activity, null);
+        }
+    }
+
     /**
      * Gets the selected vehicle uid
      *
@@ -64,11 +86,12 @@ public abstract class AppDatabase extends RoomDatabase {
 
         if (!TextUtils.isEmpty(vehicleUid)) {
             editor.putString(SELECTED_VEHICLE_UID_KEY, vehicleUid);
+            Timber.d("Set vehicle id to " + vehicleUid + " in preferences.");
         } else {
             editor.remove(SELECTED_VEHICLE_UID_KEY);
+            Timber.d("Removing vehicle id preference");
         }
 
-        Timber.d("Set vehicle id to " + vehicleUid + " in preferences.");
 
         editor.commit();
     }
@@ -82,13 +105,18 @@ public abstract class AppDatabase extends RoomDatabase {
         return startingMileage;
     }
 
-    public static void setStartingMileage(Activity activity, int startingMileage) {
+    public static void setStartingMileage(Activity activity, Integer startingMileage) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
-        editor.putInt(STARTING_MILEAGE_KEY, startingMileage);
+        if (startingMileage != null) {
+            editor.putInt(STARTING_MILEAGE_KEY, startingMileage);
+            Timber.d("Set starting mileage to " + startingMileage + " in preferences.");
+        } else {
+            editor.remove(STARTING_MILEAGE_KEY);
+            Timber.d("Removing starting mileage preference");
+        }
 
-        Timber.d("Set starting mileage to " + startingMileage + " in preferences.");
 
         editor.commit();
     }
@@ -102,13 +130,17 @@ public abstract class AppDatabase extends RoomDatabase {
         return startingDateEpochMs;
     }
 
-    public static void setStartingDateEpochMs(Activity activity, long startingDateEpochMs) {
+    public static void setStartingDateEpochMs(Activity activity, Long startingDateEpochMs) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
-        editor.putLong(STARTING_DATE_KEY, startingDateEpochMs);
-
-        Timber.d("Set starting date to " + startingDateEpochMs + " in preferences.");
+        if (startingDateEpochMs != null) {
+            editor.putLong(STARTING_DATE_KEY, startingDateEpochMs);
+            Timber.d("Set starting date to " + startingDateEpochMs + " in preferences.");
+        } else {
+            editor.remove(STARTING_DATE_KEY);
+            Timber.d("Removing starting date preference");
+        }
 
         editor.commit();
     }

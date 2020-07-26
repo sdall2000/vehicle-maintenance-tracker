@@ -33,7 +33,6 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        // TODO shouldn't we cache the fragment when it is first created?  Or, should we always create a new one?
         Fragment fragment = null;
 
         if (position == TAB_POSITION_DASHBOARD)
