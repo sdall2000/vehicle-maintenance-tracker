@@ -21,7 +21,10 @@ import androidx.lifecycle.Observer;
 
 import com.google.firebase.database.DatabaseError;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -38,7 +41,8 @@ public class DashboardFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private static final long MS_PER_YEAR = 1_000L * 86_400 * 365;
+    // 86,400,000 milliseconds per day.
+    private static final double MS_PER_YEAR = 86_400_000.0 * 365.0;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -82,7 +86,7 @@ public class DashboardFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
@@ -101,6 +105,9 @@ public class DashboardFragment extends Fragment {
             @Override
             public void onChanged(List<MileageEntry> mileageEntries) {
                 if (mileageEntries.size() != 0) {
+                    // Mileage entries are sorted by date descending.
+
+                    // Get the most recent one.
                     MileageEntry mostRecent = mileageEntries.get(0);
 
                     binding.textViewMileage.setText(Integer.toString(mostRecent.getMileage()));
@@ -108,15 +115,24 @@ public class DashboardFragment extends Fragment {
 
                     // We need at least two mileage entries to calculate the average.
                     if (mileageEntries.size() >= 2) {
+
+                        // Get the last one in the list, which would be the oldest entry.
                         MileageEntry oldest = mileageEntries.get(mileageEntries.size() - 1);
 
-                        long deltaMs = mostRecent.getDate().getTime() - oldest.getDate().getTime();
+                        long timeDeltaMs = mostRecent.getDate().getTime() - oldest.getDate().getTime();
 
-                        if (deltaMs > 0) {
+                        // Make sure there is some delta.
+                        if (timeDeltaMs > 0) {
                             // Calculate average miles per year.
                             int milesTravelled = mostRecent.getMileage() - oldest.getMileage();
 
-                            long averagePerYear = Math.round((double) deltaMs / MS_PER_YEAR * milesTravelled);
+                            // We are calculating average miles per year.  Convert the time delta to years.
+                            double timeDeltaYears = timeDeltaMs / MS_PER_YEAR;
+
+                            // If we drove 7500 miles in .75 years (9 months), that would mean
+                            // we would be averaging 10,000 miles in a year.
+                            // We just divide miles travelled by the years delta.
+                            long averagePerYear = Math.round(milesTravelled / timeDeltaYears);
 
                             binding.textViewMileageAverage.setText(Long.toString(averagePerYear));
                         }
