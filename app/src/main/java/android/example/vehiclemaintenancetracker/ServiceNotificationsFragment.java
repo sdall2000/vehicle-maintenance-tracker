@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
-import android.example.vehiclemaintenancetracker.data.MaintenanceEntry;
+import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
@@ -31,7 +31,6 @@ import com.google.firebase.database.DatabaseError;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +45,7 @@ import timber.log.Timber;
 public class ServiceNotificationsFragment extends Fragment {
 
     private List<MileageEntry> mileageEntries;
-    private List<MaintenanceEntry> maintenanceEntries;
+    private List<MaintenanceEntryJoined> maintenanceEntries;
     private VehicleInfo vehicleInfo;
     private Set<MaintenanceScheduleEntry> maintenanceScheduleEntries;
 
@@ -141,7 +140,8 @@ public class ServiceNotificationsFragment extends Fragment {
     }
 
     private void setupObservers() {
-        // Observe changes to the mileage data.
+        // Observe changes to the mileage data.  We need to listen to this separately from the joined
+        // query below, because mileage entries may be made without corresponding maintenance entries.
         LiveData<List<MileageEntry>> mileage = AppDatabase.getInstance(getContext()).getMileageEntryDao().getAllLiveData();
 
         mileage.observe(getViewLifecycleOwner(), new Observer<List<MileageEntry>>() {
@@ -153,12 +153,12 @@ public class ServiceNotificationsFragment extends Fragment {
             }
         });
 
-        // Observe changes to maintenance.
-        LiveData<List<MaintenanceEntry>> maintenance = AppDatabase.getInstance(getContext()).getMaintenanceDao().getAllLiveData();
+        // Observe changes to joined maintenance/mileage.
+        LiveData<List<MaintenanceEntryJoined>> maintenance = AppDatabase.getInstance(getContext()).getMaintenanceDao().getAllJoinedLiveData();
 
-        maintenance.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntry>>() {
+        maintenance.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntryJoined>>() {
             @Override
-            public void onChanged(List<MaintenanceEntry> maintenanceEntries) {
+            public void onChanged(List<MaintenanceEntryJoined> maintenanceEntries) {
                 ServiceNotificationsFragment.this.maintenanceEntries = maintenanceEntries;
 
                 recalculateServiceNotifications();
@@ -181,49 +181,20 @@ public class ServiceNotificationsFragment extends Fragment {
             int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicleInfo.getStartingMileage();
             long currentDate = System.currentTimeMillis();
 
-            // Link mileage entries to maintenance entries.
-            if (linkMileageEntriesToMaintenanceEntries()) {
+            // Get the vehicle UID, start date, and start mileage.
+            List<ServiceNotification> serviceNotifications = ServiceNotificationGenerator.generateServiceNotifications(
+                    currentMileage,
+                    currentDate,
+                    maintenanceScheduleEntries,
+                    maintenanceEntries,
+                    100,
+                    10,
+                    vehicleInfo.getStartingMileage(),
+                    vehicleInfo.getStartingDateEpochMs()
+            );
 
-                Set<MaintenanceEntry> maintenanceEntrySet = new HashSet<>(maintenanceEntries);
-
-                // Get the vehicle UID, start date, and start mileage.
-                List<ServiceNotification> serviceNotifications = ServiceNotificationGenerator.generateServiceNotifications(
-                        currentMileage,
-                        currentDate,
-                        maintenanceScheduleEntries,
-                        maintenanceEntrySet,
-                        100,
-                        10,
-                        vehicleInfo.getStartingMileage(),
-                        vehicleInfo.getStartingDateEpochMs()
-                );
-
-                binding.recyclerView.setAdapter(new NotificationsRecylerViewAdapter(ServiceNotificationsFragment.this, serviceNotifications));
-            } else {
-                Timber.d("Not all maintenance entries had linked mileage entries.");
-            }
+            binding.recyclerView.setAdapter(new NotificationsRecylerViewAdapter(ServiceNotificationsFragment.this, serviceNotifications));
         }
-    }
-
-    private boolean linkMileageEntriesToMaintenanceEntries() {
-        boolean allLinked = true;
-
-        for (MaintenanceEntry maintenanceEntry : maintenanceEntries) {
-            boolean found = false;
-            for (MileageEntry mileageEntry : mileageEntries) {
-                if (maintenanceEntry.getMileageUid() == mileageEntry.getUid()) {
-                    maintenanceEntry.setMileageEntry(mileageEntry);
-                    found = true;
-                }
-            }
-
-            if (!found) {
-                allLinked = false;
-                break;
-            }
-        }
-
-        return allLinked;
     }
 
     public static class NotificationsRecylerViewAdapter

@@ -1,6 +1,6 @@
 package android.example.vehiclemaintenancetracker.utilities;
 
-import android.example.vehiclemaintenancetracker.data.MaintenanceEntry;
+import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.Status;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class ServiceNotificationGenerator {
 
-    private static final long MS_PER_DAY = 1_000L * 86_400;
+    private static final float MS_PER_DAY = 1_000.0f * 86_400.0f;
 
     /**
      * @param currentMileage             Represents the last recorded mileage of the vehicle for calculating when service is due based on mileage
@@ -30,7 +30,7 @@ public class ServiceNotificationGenerator {
             int currentMileage,
             long currentDateEpochMs,
             Set<MaintenanceScheduleEntry> maintenanceScheduleEntries,
-            Set<MaintenanceEntry> maintenanceEntries,
+            List<MaintenanceEntryJoined> maintenanceEntries,
             int mileageWarningThreshold,
             int dateWarningThresholdDays,
             int startingMileage,
@@ -40,7 +40,7 @@ public class ServiceNotificationGenerator {
 
         // For each maintenance schedule entry, figure out if a notification is needed.
         for (MaintenanceScheduleEntry scheduleEntry : maintenanceScheduleEntries) {
-            MaintenanceEntry mostRecentMaintenanceEntry = getMostRecentMaintenanceEntry(scheduleEntry.getMaintenanceItemId(), maintenanceEntries);
+            MaintenanceEntryJoined mostRecentMaintenanceEntry = getMostRecentMaintenanceEntry(scheduleEntry.getMaintenanceItemId(), maintenanceEntries);
 
             // Default last mileage and date to vehicle starting values.
             int lastServiceMileage = startingMileage;
@@ -49,8 +49,8 @@ public class ServiceNotificationGenerator {
             // See if there was a maintenance entry
             if (mostRecentMaintenanceEntry != null) {
                 // Update the last service variables to match the maintenance.
-                lastServiceMileage = mostRecentMaintenanceEntry.getMileageEntry().getMileage();
-                lastServiceDateEpochMs = mostRecentMaintenanceEntry.getMileageEntry().getDate().getTime();
+                lastServiceMileage = mostRecentMaintenanceEntry.getMileage();
+                lastServiceDateEpochMs = mostRecentMaintenanceEntry.getDate().getTime();
             }
 
             ServiceNotification serviceNotification = generateServiceNotification(
@@ -71,22 +71,17 @@ public class ServiceNotificationGenerator {
         return serviceNotifications;
     }
 
-    private static MaintenanceEntry getMostRecentMaintenanceEntry(String maintenanceItemId, Set<MaintenanceEntry> maintenanceEntries) {
-        MaintenanceEntry maintenanceEntry = null;
-
+    private static MaintenanceEntryJoined getMostRecentMaintenanceEntry(String maintenanceItemId, List<MaintenanceEntryJoined> maintenanceEntries) {
+        // Maintenance entries are sorted by date descending.  Return the first match if any.
         if (maintenanceEntries != null) {
-            for (MaintenanceEntry entry : maintenanceEntries) {
+            for (MaintenanceEntryJoined entry : maintenanceEntries) {
                 if (entry.getMaintenanceItemUid().equals(maintenanceItemId)) {
-                    if (maintenanceEntry == null) {
-                        maintenanceEntry = entry;
-                    } else if (entry.getMileageEntry().getDate().getTime() > maintenanceEntry.getMileageEntry().getDate().getTime()) {
-                        maintenanceEntry = entry;
-                    }
+                    return entry;
                 }
             }
         }
 
-        return maintenanceEntry;
+        return null;
     }
 
     /**
@@ -107,9 +102,6 @@ public class ServiceNotificationGenerator {
             MaintenanceScheduleEntry maintenanceScheduleEntry,
             int mileageWarningThreshold,
             int dateWarningThresholdDays) {
-
-        ServiceNotification serviceNotification = null;
-
 
         // Initialize mileage status variables.
         Status mileageStatus = Status.Good;
@@ -162,9 +154,7 @@ public class ServiceNotificationGenerator {
         Status overallStatus = getBlendedStatus(dayStatus, mileageStatus);
 
         // Create our service notification
-        serviceNotification = new ServiceNotification(maintenanceScheduleEntry.getMaintenance(), mileageDue, dateDue, overallStatus);
-
-        return serviceNotification;
+        return new ServiceNotification(maintenanceScheduleEntry.getMaintenance(), mileageDue, dateDue, overallStatus);
     }
 
 

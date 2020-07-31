@@ -9,9 +9,6 @@ import java.util.List;
 
 @Dao
 public interface MaintenanceDao {
-    @Query("SELECT * FROM maintenanceEntry")
-    LiveData<List<MaintenanceEntry>> getAllLiveData();
-
     @Query(
             "SELECT MAINT.uid, MAINT.maintenanceItemUid, MAINT.provider, MAINT.cost, MLG.mileage, MLG.date " +
                     "FROM maintenanceEntry MAINT " +
