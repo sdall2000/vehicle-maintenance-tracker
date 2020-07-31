@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:baselineAligned="false">
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="@dimen/history_date_col_weight">
+
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/history_date_col_label" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="@dimen/history_mileage_col_weight">
+
+        <TextView
+            android:id="@+id/textViewMileage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/history_mileage_col_label" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="@dimen/history_service_col_weight">
+
+        <TextView
+            android:id="@+id/textViewService"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/history_service_col_label" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="@dimen/history_cost_col_weight">
+
+        <TextView
+            android:id="@+id/textViewCost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/history_cost_col_label" />
+    </RelativeLayout>
+</LinearLayout>

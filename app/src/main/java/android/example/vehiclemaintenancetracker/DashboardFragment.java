@@ -7,6 +7,7 @@ import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentDashboardBinding;
+import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -24,29 +25,13 @@ import com.google.firebase.database.DatabaseError;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link DashboardFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class DashboardFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // 86,400,000 milliseconds per day.
     private static final double MS_PER_YEAR = 86_400_000.0 * 365.0;
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     FragmentDashboardBinding binding;
 
@@ -56,33 +41,6 @@ public class DashboardFragment extends Fragment {
 
     public DashboardFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DashboardFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static DashboardFragment newInstance(String param1, String param2) {
-        DashboardFragment fragment = new DashboardFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -110,7 +68,7 @@ public class DashboardFragment extends Fragment {
                     // Get the most recent one.
                     MileageEntry mostRecent = mileageEntries.get(0);
 
-                    binding.textViewMileage.setText(Integer.toString(mostRecent.getMileage()));
+                    binding.textViewMileage.setText(ValueFormatter.formatDistance(mostRecent.getMileage()));
                     binding.textViewMileageReported.setText(DateConverter.convertDateToString(getContext(), mostRecent.getDate()));
 
                     // We need at least two mileage entries to calculate the average.
@@ -132,9 +90,9 @@ public class DashboardFragment extends Fragment {
                             // If we drove 7500 miles in .75 years (9 months), that would mean
                             // we would be averaging 10,000 miles in a year.
                             // We just divide miles travelled by the years delta.
-                            long averagePerYear = Math.round(milesTravelled / timeDeltaYears);
+                            int averagePerYear = (int) Math.round(milesTravelled / timeDeltaYears);
 
-                            binding.textViewMileageAverage.setText(Long.toString(averagePerYear));
+                            binding.textViewMileageAverage.setText(ValueFormatter.formatDistance(averagePerYear));
                         }
                     } else {
                         binding.textViewMileageAverage.setText("");

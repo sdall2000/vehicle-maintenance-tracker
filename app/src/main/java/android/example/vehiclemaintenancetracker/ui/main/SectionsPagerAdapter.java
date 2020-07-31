@@ -12,6 +12,8 @@ import android.example.vehiclemaintenancetracker.DashboardFragment;
 import android.example.vehiclemaintenancetracker.HistoryFragment;
 import android.example.vehiclemaintenancetracker.R;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A [FragmentPagerAdapter] that returns a fragment corresponding to
  * one of the sections/tabs/pages.
@@ -37,9 +39,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         if (position == TAB_POSITION_DASHBOARD)
         {
-            fragment = DashboardFragment.newInstance("Test1", "Test2");
+            fragment = new DashboardFragment();
         } else if (position == TAB_POSITION_HISTORY) {
-            fragment = HistoryFragment.newInstance("Test3", "Test4");
+            fragment = new HistoryFragment();
         }
 
         return fragment;

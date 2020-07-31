@@ -10,4 +10,8 @@
     <dimen name="appbar_padding">16dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
     <dimen name="vehicle_text_size">20sp</dimen>
+    <item name="history_date_col_weight" type="dimen" format="float">0.2</item>
+    <item name="history_mileage_col_weight" type="dimen" format="float">0.2</item>
+    <item name="history_service_col_weight" type="dimen" format="float">0.4</item>
+    <item name="history_cost_col_weight" type="dimen" format="float">0.2</item>
 </resources>

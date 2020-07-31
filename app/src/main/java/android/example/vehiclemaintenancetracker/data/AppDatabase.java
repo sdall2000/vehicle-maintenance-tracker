@@ -45,11 +45,17 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     public static VehicleInfo getVehicleInfo(Activity activity) {
+        VehicleInfo vehicleInfo = null;
+
         String vehicleUid = getVehicleUid(activity);
         int startingMileage = getStartingMileage(activity);
         long startingDateEpochMs = getStartingDateEpochMs(activity);
 
-        return new VehicleInfo(vehicleUid, startingMileage, startingDateEpochMs);
+        if (!TextUtils.isEmpty(vehicleUid)) {
+            vehicleInfo = new VehicleInfo(vehicleUid, startingMileage, startingDateEpochMs);
+        }
+
+        return vehicleInfo;
     }
 
     public static void setVehicleInfo(Activity activity, VehicleInfo vehicleInfo) {

@@ -5,6 +5,7 @@ import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMileageBinding;
 import android.example.vehiclemaintenancetracker.databinding.ContentMileageBinding;
+import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -15,11 +16,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MileageActivity extends AppCompatActivity {
-    private ActivityMileageBinding activityMileageBinding;
     private ContentMileageBinding contentMileageBinding;
     private DateFormat dateFormat;
 
@@ -29,7 +28,7 @@ public class MileageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activityMileageBinding = ActivityMileageBinding.inflate(getLayoutInflater());
+        android.example.vehiclemaintenancetracker.databinding.ActivityMileageBinding activityMileageBinding = ActivityMileageBinding.inflate(getLayoutInflater());
         setContentView(activityMileageBinding.getRoot());
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -93,7 +92,7 @@ public class MileageActivity extends AppCompatActivity {
             contentMileageBinding.textViewLastEntry.setText(
                     getString(
                             R.string.last_mileage_entered_label,
-                            mileageEntry.getMileage(),
+                            ValueFormatter.formatDistance(mileageEntry.getMileage()),
                             DateConverter.convertDateToString(getApplicationContext(), mileageEntry.getDate())));
         } else {
             contentMileageBinding.textViewLastEntry.setText("");

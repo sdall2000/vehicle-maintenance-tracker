@@ -12,6 +12,7 @@ import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
+import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -253,7 +254,7 @@ public class ServiceNotificationsFragment extends Fragment {
             holder.serviceTextView.setText(notification.getService());
 
             if (notification.getMileageDue() != null) {
-                holder.mileageTextView.setText(Integer.toString(notification.getMileageDue()));
+                holder.mileageTextView.setText(ValueFormatter.formatDistance(notification.getMileageDue()));
             } else {
                 holder.mileageTextView.setText("");
             }
