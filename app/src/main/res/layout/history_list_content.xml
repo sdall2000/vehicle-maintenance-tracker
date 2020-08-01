@@ -13,7 +13,7 @@
             android:id="@+id/textViewDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/history_date_col_label" />
+            android:text="@string/date_col_label" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -25,7 +25,7 @@
             android:id="@+id/textViewMileage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/history_mileage_col_label" />
+            android:text="@string/mileage_col_label" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -37,7 +37,7 @@
             android:id="@+id/textViewService"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/history_service_col_label" />
+            android:text="@string/service_col_label" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -49,6 +49,6 @@
             android:id="@+id/textViewCost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/history_cost_col_label" />
+            android:text="@string/cost_col_label" />
     </RelativeLayout>
 </LinearLayout>

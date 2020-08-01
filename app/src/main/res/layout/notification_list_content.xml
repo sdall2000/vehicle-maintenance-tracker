@@ -8,7 +8,7 @@
     <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0.4">
+        android:layout_weight="@dimen/notification_service_col_weight">
 
         <TextView
             android:id="@+id/textViewService"
@@ -20,7 +20,7 @@
     <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0.3">
+        android:layout_weight="@dimen/notification_service_mileage_col_weight">
 
         <TextView
             android:id="@+id/textViewMileage"
@@ -32,7 +32,7 @@
     <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0.3">
+        android:layout_weight="@dimen/notification_service_date_col_weight">
 
         <TextView
             android:id="@+id/textViewDate"
