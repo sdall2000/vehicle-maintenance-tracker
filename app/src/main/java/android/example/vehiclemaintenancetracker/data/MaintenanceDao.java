@@ -13,6 +13,12 @@ public interface MaintenanceDao {
             "SELECT MAINT.uid, MAINT.maintenanceItemUid, MAINT.provider, MAINT.cost, MLG.mileage, MLG.date " +
                     "FROM maintenanceEntry MAINT " +
                     "INNER JOIN mileageEntry MLG on MAINT.mileageUid = MLG.uid ORDER BY MLG.date DESC")
+    List<MaintenanceEntryJoined> getAllJoined();
+
+    @Query(
+            "SELECT MAINT.uid, MAINT.maintenanceItemUid, MAINT.provider, MAINT.cost, MLG.mileage, MLG.date " +
+                    "FROM maintenanceEntry MAINT " +
+                    "INNER JOIN mileageEntry MLG on MAINT.mileageUid = MLG.uid ORDER BY MLG.date DESC")
     LiveData<List<MaintenanceEntryJoined>> getAllJoinedLiveData();
 
     @Insert

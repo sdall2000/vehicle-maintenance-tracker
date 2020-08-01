@@ -46,9 +46,11 @@
     <string name="cost_label">Cost:</string>
     <string name="start_mileage_label">Starting Mileage:</string>
     <string name="start_date_label">Starting Date:</string>
-    <string name = "history_date_col_label">Date</string>
-    <string name = "history_mileage_col_label">Mileage</string>
-    <string name = "history_service_col_label">Service</string>
-    <string name = "history_cost_col_label">Cost</string>
-    <string name = "history_total_label">Total:</string>
+    <string name="history_date_col_label">Date</string>
+    <string name="history_mileage_col_label">Mileage</string>
+    <string name="history_service_col_label">Service</string>
+    <string name="history_cost_col_label">Cost</string>
+    <string name="history_total_label">Total:</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

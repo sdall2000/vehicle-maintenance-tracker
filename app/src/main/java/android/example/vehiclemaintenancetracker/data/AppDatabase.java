@@ -1,6 +1,5 @@
 package android.example.vehiclemaintenancetracker.data;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
@@ -44,7 +43,7 @@ public abstract class AppDatabase extends RoomDatabase {
         return instance;
     }
 
-    public static VehicleInfo getVehicleInfo(Activity activity) {
+    public static VehicleInfo getVehicleInfo(Context activity) {
         VehicleInfo vehicleInfo = null;
 
         String vehicleUid = getVehicleUid(activity);
@@ -58,7 +57,7 @@ public abstract class AppDatabase extends RoomDatabase {
         return vehicleInfo;
     }
 
-    public static void setVehicleInfo(Activity activity, VehicleInfo vehicleInfo) {
+    public static void setVehicleInfo(Context activity, VehicleInfo vehicleInfo) {
         if (vehicleInfo != null) {
             setVehicleUid(activity, vehicleInfo.getVehicleUid());
             setStartingMileage(activity, vehicleInfo.getStartingMileage());
@@ -77,7 +76,7 @@ public abstract class AppDatabase extends RoomDatabase {
      * @param activity The activity to use for fetching the shared preferences
      * @return The vehicle uid, or null if it is not set.
      */
-    public static String getVehicleUid(Activity activity) {
+    public static String getVehicleUid(Context activity) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         String vehicleUid = preferences.getString(SELECTED_VEHICLE_UID_KEY, null);
 
@@ -86,7 +85,7 @@ public abstract class AppDatabase extends RoomDatabase {
         return vehicleUid;
     }
 
-    public static void setVehicleUid(Activity activity, String vehicleUid) {
+    public static void setVehicleUid(Context activity, String vehicleUid) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -99,10 +98,10 @@ public abstract class AppDatabase extends RoomDatabase {
         }
 
 
-        editor.commit();
+        editor.apply();
     }
 
-    public static int getStartingMileage(Activity activity) {
+    public static int getStartingMileage(Context activity) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         int startingMileage = preferences.getInt(STARTING_MILEAGE_KEY, 0);
 
@@ -111,7 +110,7 @@ public abstract class AppDatabase extends RoomDatabase {
         return startingMileage;
     }
 
-    public static void setStartingMileage(Activity activity, Integer startingMileage) {
+    public static void setStartingMileage(Context activity, Integer startingMileage) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -124,10 +123,10 @@ public abstract class AppDatabase extends RoomDatabase {
         }
 
 
-        editor.commit();
+        editor.apply();
     }
 
-    public static long getStartingDateEpochMs(Activity activity) {
+    public static long getStartingDateEpochMs(Context activity) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         long startingDateEpochMs = preferences.getLong(STARTING_DATE_KEY, 0);
 
@@ -136,7 +135,7 @@ public abstract class AppDatabase extends RoomDatabase {
         return startingDateEpochMs;
     }
 
-    public static void setStartingDateEpochMs(Activity activity, Long startingDateEpochMs) {
+    public static void setStartingDateEpochMs(Context activity, Long startingDateEpochMs) {
         SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -148,6 +147,6 @@ public abstract class AppDatabase extends RoomDatabase {
             Timber.d("Removing starting date preference");
         }
 
-        editor.commit();
+        editor.apply();
     }
 }
