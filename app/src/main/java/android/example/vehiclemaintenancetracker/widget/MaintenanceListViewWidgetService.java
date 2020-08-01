@@ -106,8 +106,8 @@ class MaintenanceListRemoteViewsFactory implements RemoteViewsService.RemoteView
                 currentDate,
                 maintenanceScheduleEntries,
                 maintenanceEntries,
-                100, // TODO store these in a resource or constant.
-                10,
+                AppDatabase.getMileageWarningThreshold(context),
+                AppDatabase.getDayWarningThreshold(context),
                 vehicleInfo.getStartingMileage(),
                 vehicleInfo.getStartingDateEpochMs()
         );

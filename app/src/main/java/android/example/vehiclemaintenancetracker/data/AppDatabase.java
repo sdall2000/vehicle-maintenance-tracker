@@ -10,8 +10,6 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-import timber.log.Timber;
-
 @Database(entities = {MileageEntry.class, MaintenanceEntry.class}, version = 1)
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -24,6 +22,12 @@ public abstract class AppDatabase extends RoomDatabase {
     private static final String SELECTED_VEHICLE_UID_KEY = "selectedVehicleUid";
     private static final String STARTING_MILEAGE_KEY = "startingMileageKey";
     private static final String STARTING_DATE_KEY = "startingDateKey";
+
+    private static final String DAY_WARNING_THRESHOLD_KEY = "dayWarningThreshold";
+    private static final String MILEAGE_WARNING_THRESHOLD_KEY = "mileageWarningThreshold";
+
+    private static final int DEFAULT_DAY_WARNING_THRESHOLD = 10;
+    private static final int DEFAULT_MILEAGE_WARNING_THRESHOLD = 100;
 
     // This class holds the singleton.
     private static volatile AppDatabase instance;
@@ -43,12 +47,12 @@ public abstract class AppDatabase extends RoomDatabase {
         return instance;
     }
 
-    public static VehicleInfo getVehicleInfo(Context activity) {
+    public static VehicleInfo getVehicleInfo(Context context) {
         VehicleInfo vehicleInfo = null;
 
-        String vehicleUid = getVehicleUid(activity);
-        int startingMileage = getStartingMileage(activity);
-        long startingDateEpochMs = getStartingDateEpochMs(activity);
+        String vehicleUid = getVehicleUid(context);
+        int startingMileage = getStartingMileage(context);
+        long startingDateEpochMs = getStartingDateEpochMs(context);
 
         if (!TextUtils.isEmpty(vehicleUid)) {
             vehicleInfo = new VehicleInfo(vehicleUid, startingMileage, startingDateEpochMs);
@@ -57,96 +61,110 @@ public abstract class AppDatabase extends RoomDatabase {
         return vehicleInfo;
     }
 
-    public static void setVehicleInfo(Context activity, VehicleInfo vehicleInfo) {
+    public static void setVehicleInfo(Context context, VehicleInfo vehicleInfo) {
         if (vehicleInfo != null) {
-            setVehicleUid(activity, vehicleInfo.getVehicleUid());
-            setStartingMileage(activity, vehicleInfo.getStartingMileage());
-            setStartingDateEpochMs(activity, vehicleInfo.getStartingDateEpochMs());
+            setVehicleUid(context, vehicleInfo.getVehicleUid());
+            setStartingMileage(context, vehicleInfo.getStartingMileage());
+            setStartingDateEpochMs(context, vehicleInfo.getStartingDateEpochMs());
         } else {
             // Pass nulls to clear settings.
-            setVehicleUid(activity, null);
-            setStartingMileage(activity, null);
-            setStartingDateEpochMs(activity, null);
+            setVehicleUid(context, null);
+            setStartingMileage(context, null);
+            setStartingDateEpochMs(context, null);
         }
     }
 
     /**
      * Gets the selected vehicle uid
      *
-     * @param activity The activity to use for fetching the shared preferences
+     * @param context The context to use for fetching the shared preferences
      * @return The vehicle uid, or null if it is not set.
      */
-    public static String getVehicleUid(Context activity) {
-        SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        String vehicleUid = preferences.getString(SELECTED_VEHICLE_UID_KEY, null);
-
-        Timber.d("Got vehicle uid " + vehicleUid + " from preferences.");
-
-        return vehicleUid;
+    public static String getVehicleUid(Context context) {
+        return getSharedPreferences(context).getString(SELECTED_VEHICLE_UID_KEY, null);
     }
 
-    public static void setVehicleUid(Context activity, String vehicleUid) {
-        SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
+    public static void setVehicleUid(Context context, String vehicleUid) {
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
 
         if (!TextUtils.isEmpty(vehicleUid)) {
             editor.putString(SELECTED_VEHICLE_UID_KEY, vehicleUid);
-            Timber.d("Set vehicle id to " + vehicleUid + " in preferences.");
         } else {
             editor.remove(SELECTED_VEHICLE_UID_KEY);
-            Timber.d("Removing vehicle id preference");
         }
-
 
         editor.apply();
     }
 
-    public static int getStartingMileage(Context activity) {
-        SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        int startingMileage = preferences.getInt(STARTING_MILEAGE_KEY, 0);
-
-        Timber.d("Got starting mileage uid " + startingMileage + " from preferences.");
-
-        return startingMileage;
+    public static int getStartingMileage(Context context) {
+        return getSharedPreferences(context).getInt(STARTING_MILEAGE_KEY, 0);
     }
 
-    public static void setStartingMileage(Context activity, Integer startingMileage) {
-        SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
+    public static void setStartingMileage(Context context, Integer startingMileage) {
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
 
         if (startingMileage != null) {
             editor.putInt(STARTING_MILEAGE_KEY, startingMileage);
-            Timber.d("Set starting mileage to " + startingMileage + " in preferences.");
         } else {
             editor.remove(STARTING_MILEAGE_KEY);
-            Timber.d("Removing starting mileage preference");
         }
-
 
         editor.apply();
     }
 
-    public static long getStartingDateEpochMs(Context activity) {
-        SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        long startingDateEpochMs = preferences.getLong(STARTING_DATE_KEY, 0);
-
-        Timber.d("Got starting date " + startingDateEpochMs + " from preferences.");
-
-        return startingDateEpochMs;
+    public static long getStartingDateEpochMs(Context context) {
+        return getSharedPreferences(context).getLong(STARTING_DATE_KEY, 0);
     }
 
-    public static void setStartingDateEpochMs(Context activity, Long startingDateEpochMs) {
-        SharedPreferences preferences = activity.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
+    public static void setStartingDateEpochMs(Context context, Long startingDateEpochMs) {
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
 
         if (startingDateEpochMs != null) {
             editor.putLong(STARTING_DATE_KEY, startingDateEpochMs);
-            Timber.d("Set starting date to " + startingDateEpochMs + " in preferences.");
         } else {
             editor.remove(STARTING_DATE_KEY);
-            Timber.d("Removing starting date preference");
         }
 
         editor.apply();
+    }
+
+    public static int getDayWarningThreshold(Context context) {
+        return getSharedPreferences(context).getInt(DAY_WARNING_THRESHOLD_KEY, DEFAULT_DAY_WARNING_THRESHOLD);
+    }
+
+    // We don't use the setter yet, but eventually this setting would be part of the user
+    // modifiable configuration.
+    public static void setDayWarningThreshold(Context context, Integer dayWarningThreshold) {
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
+
+        if (dayWarningThreshold != null) {
+            editor.putInt(DAY_WARNING_THRESHOLD_KEY, dayWarningThreshold);
+        } else {
+            editor.remove(DAY_WARNING_THRESHOLD_KEY);
+        }
+
+        editor.apply();
+    }
+
+    public static int getMileageWarningThreshold(Context context) {
+        return getSharedPreferences(context).getInt(MILEAGE_WARNING_THRESHOLD_KEY, DEFAULT_MILEAGE_WARNING_THRESHOLD);
+    }
+
+    // We don't use the setter yet, but eventually this setting would be part of the user
+    // modifiable configuration.
+    public static void setMileageWarningThreshold(Context context, Integer mileageWarningThreshold) {
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
+
+        if (mileageWarningThreshold != null) {
+            editor.putInt(MILEAGE_WARNING_THRESHOLD_KEY, mileageWarningThreshold);
+        } else {
+            editor.remove(MILEAGE_WARNING_THRESHOLD_KEY);
+        }
+
+        editor.apply();
+    }
+
+    private static SharedPreferences getSharedPreferences(Context context) {
+        return context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
     }
 }

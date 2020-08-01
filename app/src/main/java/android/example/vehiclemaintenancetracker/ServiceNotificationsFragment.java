@@ -187,8 +187,8 @@ public class ServiceNotificationsFragment extends Fragment {
                     currentDate,
                     maintenanceScheduleEntries,
                     maintenanceEntries,
-                    100, // TODO store these in a resource or constant.
-                    10,
+                    AppDatabase.getMileageWarningThreshold(getContext()),
+                    AppDatabase.getDayWarningThreshold(getContext()),
                     vehicleInfo.getStartingMileage(),
                     vehicleInfo.getStartingDateEpochMs()
             );
