@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.MainActivity;
 import android.example.vehiclemaintenancetracker.R;
-import android.example.vehiclemaintenancetracker.widget.MaintenanceListViewWidgetService;
 import android.widget.RemoteViews;
 
 /**
@@ -21,16 +20,16 @@ public class VehicleMaintenanceTrackerAppWidget extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.vehicle_maintenance_tracker_app_widget);
 
-        // Create an intent to launch the main activity
-        Intent intent = new Intent(context, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
-        // Attach the on click listener to the app widget text.
-//        remoteViews.setOnClickPendingIntent(R.id.appwidget_text, pendingIntent);
+        // Create an intent to launch the main activity when the app widget is clicked
+        Intent activityIntent = new Intent(context, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, activityIntent, 0);
+        remoteViews.setOnClickPendingIntent(R.id.app_widget_layout, pendingIntent);
+        remoteViews.setPendingIntentTemplate(R.id.maintenanceWidgetListView, pendingIntent);
 
         // Populate list view
         Intent listIntent = new Intent(context, MaintenanceListViewWidgetService.class);
         remoteViews.setRemoteAdapter(R.id.maintenanceWidgetListView, listIntent);
+
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);

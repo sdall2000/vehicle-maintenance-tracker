@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 public class MaintenanceListViewWidgetService extends RemoteViewsService {
+    public static final String PARAM_MAINTENANCE_ROW = "PARAM_MAINTENANCE_ROW";
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         return new MaintenanceListRemoteViewsFactory(getApplicationContext());
@@ -155,6 +157,15 @@ class MaintenanceListRemoteViewsFactory implements RemoteViewsService.RemoteView
         if (serviceNotification.getDateDue() != null) {
             remoteViews.setTextViewText(R.id.textViewDate, DateConverter.convertDateToString(context, serviceNotification.getDateDue()));
         }
+
+        // Set on click to launch main app.
+        Intent fillInIntent = new Intent();
+
+        // This is extra is not currently used, but in the future we could consider launching
+        // the add maintenance activity for the specific maintenance row.
+        fillInIntent.putExtra(MaintenanceListViewWidgetService.PARAM_MAINTENANCE_ROW, position);
+
+        remoteViews.setOnClickFillInIntent(R.id.notification_list, fillInIntent);
 
         return remoteViews;
     }
