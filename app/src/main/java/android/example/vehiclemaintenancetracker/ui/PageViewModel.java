@@ -1,4 +1,4 @@
-package android.example.vehiclemaintenancetracker.ui.main;
+package android.example.vehiclemaintenancetracker.ui;
 
 import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;

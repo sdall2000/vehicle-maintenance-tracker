@@ -63,7 +63,7 @@ public class ServiceNotificationGenerator {
                     dateWarningThresholdDays);
 
             // We are only including service that is needed.  Ignore status of Good.
-            if (serviceNotification.getStatus() != Status.Good) {
+            if (serviceNotification.getOverallStatus() != Status.Good) {
                 serviceNotifications.add(serviceNotification);
             }
         }
@@ -154,7 +154,13 @@ public class ServiceNotificationGenerator {
         Status overallStatus = getBlendedStatus(dayStatus, mileageStatus);
 
         // Create our service notification
-        return new ServiceNotification(maintenanceScheduleEntry.getMaintenance(), mileageDue, dateDue, overallStatus);
+        return new ServiceNotification(
+                maintenanceScheduleEntry.getMaintenance(),
+                mileageDue,
+                dateDue,
+                mileageStatus,
+                dayStatus,
+                overallStatus);
     }
 
 

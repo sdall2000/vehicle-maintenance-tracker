@@ -3,16 +3,26 @@ package android.example.vehiclemaintenancetracker.model;
 import java.util.Date;
 
 public class ServiceNotification {
-    private String service;
-    private Integer mileageDue;
-    private Date dateDue;
-    private Status status;
+    private final String service;
+    private final Integer mileageDue;
+    private final Date dateDue;
+    private final Status mileageStatus;
+    private final Status dateStatus;
+    private final Status overallStatus;
 
-    public ServiceNotification(String service, Integer mileageDue, Date dateDue, Status status) {
+    public ServiceNotification(
+            String service,
+            Integer mileageDue,
+            Date dateDue,
+            Status mileageStatus,
+            Status dateStatus,
+            Status overallStatus) {
         this.service = service;
         this.mileageDue = mileageDue;
         this.dateDue = dateDue;
-        this.status = status;
+        this.mileageStatus = mileageStatus;
+        this.dateStatus = dateStatus;
+        this.overallStatus = overallStatus;
     }
 
     public String getService() {
@@ -27,7 +37,15 @@ public class ServiceNotification {
         return dateDue;
     }
 
-    public Status getStatus() {
-        return status;
+    public Status getMileageStatus() {
+        return mileageStatus;
+    }
+
+    public Status getDateStatus() {
+        return dateStatus;
+    }
+
+    public Status getOverallStatus() {
+        return overallStatus;
     }
 }

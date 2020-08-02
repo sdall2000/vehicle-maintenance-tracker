@@ -64,7 +64,7 @@ public class ServiceNotificationGeneratorTest {
         assertEquals("Oil Change", serviceNotification.getService());
         assertEquals(6_050, (long) serviceNotification.getMileageDue());
         assertNull(serviceNotification.getDateDue());
-        assertEquals(Status.Upcoming, serviceNotification.getStatus());
+        assertEquals(Status.Upcoming, serviceNotification.getOverallStatus());
 
         // Change the mileage entry for the existing maintenance entry.
         mileageEntry = new MileageEntry(2950, new Date());
@@ -87,7 +87,7 @@ public class ServiceNotificationGeneratorTest {
         assertEquals("Oil Change", serviceNotification.getService());
         assertEquals(5_950, (long) serviceNotification.getMileageDue());
         assertNull(serviceNotification.getDateDue());
-        assertEquals(Status.Overdue, serviceNotification.getStatus());
+        assertEquals(Status.Overdue, serviceNotification.getOverallStatus());
 
         // Change the mileage entry so we don't get a service notification.
         mileageEntry = new MileageEntry(4000, new Date());
@@ -157,7 +157,7 @@ public class ServiceNotificationGeneratorTest {
         Date expectedDateDue = calendar.getTime();
 
         assertEquals(expectedDateDue, serviceNotification.getDateDue());
-        assertEquals(Status.Upcoming, serviceNotification.getStatus());
+        assertEquals(Status.Upcoming, serviceNotification.getOverallStatus());
     }
 
     @Test
@@ -189,7 +189,7 @@ public class ServiceNotificationGeneratorTest {
         assertEquals("Oil Change", serviceNotification.getService());
         assertEquals(5_000, (long) serviceNotification.getMileageDue());
         assertNull(serviceNotification.getDateDue());
-        assertEquals(Status.Overdue, serviceNotification.getStatus());
+        assertEquals(Status.Overdue, serviceNotification.getOverallStatus());
     }
 
     @Test
@@ -234,6 +234,6 @@ public class ServiceNotificationGeneratorTest {
 
         assertEquals("Oil Change", serviceNotification.getService());
         assertEquals(expectedDateDue, serviceNotification.getDateDue());
-        assertEquals(Status.Upcoming, serviceNotification.getStatus());
+        assertEquals(Status.Upcoming, serviceNotification.getOverallStatus());
     }
 }

@@ -8,16 +8,17 @@ import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
+import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
+import android.example.vehiclemaintenancetracker.ui.Styler;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -197,7 +198,7 @@ public class ServiceNotificationsFragment extends Fragment {
         }
     }
 
-    public static class NotificationsRecylerViewAdapter
+    private class NotificationsRecylerViewAdapter
             extends RecyclerView.Adapter<NotificationsRecylerViewAdapter.ViewHolder> {
 
         private final ServiceNotificationsFragment parent;
@@ -212,29 +213,14 @@ public class ServiceNotificationsFragment extends Fragment {
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.notification_list_content, parent, false);
-            return new ViewHolder(view);
+            LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+            NotificationListContentBinding binding = NotificationListContentBinding.inflate(layoutInflater, parent, false);
+            return new ViewHolder(binding);
         }
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            ServiceNotification notification = notifications.get(position);
-
-            holder.serviceTextView.setText(notification.getService());
-
-            if (notification.getMileageDue() != null) {
-                holder.mileageTextView.setText(ValueFormatter.formatDistance(notification.getMileageDue()));
-            } else {
-                holder.mileageTextView.setText("");
-            }
-
-            if (notification.getDateDue() != null) {
-                holder.dateTextView.setText(DateConverter.convertDateToString(parent.getContext(), notification.getDateDue()));
-            } else {
-                holder.dateTextView.setText("");
-            }
+            holder.bindData(notifications.get(position));
         }
 
         @Override
@@ -242,18 +228,32 @@ public class ServiceNotificationsFragment extends Fragment {
             return notifications.size();
         }
 
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView serviceTextView;
-            final TextView mileageTextView;
-            final TextView dateTextView;
+        private class ViewHolder extends RecyclerView.ViewHolder {
+            private final NotificationListContentBinding binding;
 
-            ViewHolder(View view) {
-                super(view);
+            ViewHolder(NotificationListContentBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
+            }
 
-                serviceTextView = view.findViewById(R.id.textViewService);
-                mileageTextView = view.findViewById(R.id.textViewMileage);
-                dateTextView = view.findViewById(R.id.textViewDate);
+            public void bindData(ServiceNotification serviceNotification) {
+                binding.textViewService.setText(serviceNotification.getService());
+
+                if (serviceNotification.getMileageDue() != null) {
+                    binding.textViewMileage.setText(ValueFormatter.formatDistance(serviceNotification.getMileageDue()));
+                    Styler.styleTextViewStatus(getContext(), binding.textViewMileage, serviceNotification.getMileageStatus());
+                } else {
+                    binding.textViewMileage.setText("");
+                }
+
+                if (serviceNotification.getDateDue() != null) {
+                    binding.textViewDate.setText(DateConverter.convertDateToString(parent.getContext(), serviceNotification.getDateDue()));
+                    Styler.styleTextViewStatus(getContext(), binding.textViewDate, serviceNotification.getDateStatus());
+                } else {
+                    binding.textViewDate.setText("");
+                }
             }
         }
+
     }
 }

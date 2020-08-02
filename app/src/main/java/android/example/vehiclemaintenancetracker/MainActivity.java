@@ -2,7 +2,7 @@ package android.example.vehiclemaintenancetracker;
 
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMainBinding;
-import android.example.vehiclemaintenancetracker.ui.main.SectionsPagerAdapter;
+import android.example.vehiclemaintenancetracker.ui.SectionsPagerAdapter;
 import android.os.Bundle;
 import android.view.View;
 

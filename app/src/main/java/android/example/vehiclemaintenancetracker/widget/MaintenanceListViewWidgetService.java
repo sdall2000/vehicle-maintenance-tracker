@@ -14,6 +14,7 @@ import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
+import android.example.vehiclemaintenancetracker.ui.Styler;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.widget.RemoteViews;
@@ -152,10 +153,12 @@ class MaintenanceListRemoteViewsFactory implements RemoteViewsService.RemoteView
 
         if (serviceNotification.getMileageDue() != null) {
             remoteViews.setTextViewText(R.id.textViewMileage, ValueFormatter.formatDistance(serviceNotification.getMileageDue()));
+            Styler.styleResourceStatus(context, remoteViews, R.id.textViewMileage, serviceNotification.getMileageStatus());
         }
 
         if (serviceNotification.getDateDue() != null) {
             remoteViews.setTextViewText(R.id.textViewDate, DateConverter.convertDateToString(context, serviceNotification.getDateDue()));
+            Styler.styleResourceStatus(context, remoteViews, R.id.textViewDate, serviceNotification.getDateStatus());
         }
 
         // Set on click to launch main app.

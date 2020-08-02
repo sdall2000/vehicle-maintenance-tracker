@@ -30,7 +30,6 @@ public class VehicleMaintenanceTrackerAppWidget extends AppWidgetProvider {
         Intent listIntent = new Intent(context, MaintenanceListViewWidgetService.class);
         remoteViews.setRemoteAdapter(R.id.maintenanceWidgetListView, listIntent);
 
-
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }

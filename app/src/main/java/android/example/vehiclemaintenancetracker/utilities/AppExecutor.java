@@ -1,4 +1,4 @@
-package android.example.vehiclemaintenancetracker;
+package android.example.vehiclemaintenancetracker.utilities;
 
 import android.os.Handler;
 import android.os.Looper;
