@@ -1,4 +1,4 @@
-package android.example.vehiclemaintenancetracker;
+package android.example.vehiclemaintenancetracker.ui;
 
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
@@ -12,7 +12,6 @@ import android.example.vehiclemaintenancetracker.databinding.NotificationListCon
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
-import android.example.vehiclemaintenancetracker.ui.Styler;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;

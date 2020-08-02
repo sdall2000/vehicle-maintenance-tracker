@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name=".widget.VehicleMaintenanceTrackerAppWidget">
+        <receiver android:name=".ui.widget.VehicleMaintenanceTrackerAppWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -19,16 +19,16 @@
                 android:resource="@xml/vehicle_maintenance_tracker_app_widget_info" />
         </receiver>
         <service
-            android:name=".widget.MaintenanceListViewWidgetService"
+            android:name=".ui.widget.MaintenanceListViewWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"/>
-        <activity android:name=".MaintenanceActivity" />
-        <activity android:name=".VehicleChooserActivity" />
+        <activity android:name=".ui.MaintenanceActivity" />
+        <activity android:name=".ui.VehicleChooserActivity" />
         <activity
-            android:name=".MileageActivity"
+            android:name=".ui.MileageActivity"
             android:label="@string/title_activity_mileage"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

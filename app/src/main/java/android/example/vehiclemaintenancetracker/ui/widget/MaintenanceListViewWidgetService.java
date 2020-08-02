@@ -1,4 +1,4 @@
-package android.example.vehiclemaintenancetracker.widget;
+package android.example.vehiclemaintenancetracker.ui.widget;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;

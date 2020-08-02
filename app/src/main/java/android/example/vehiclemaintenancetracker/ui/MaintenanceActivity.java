@@ -1,7 +1,8 @@
-package android.example.vehiclemaintenancetracker;
+package android.example.vehiclemaintenancetracker.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntry;

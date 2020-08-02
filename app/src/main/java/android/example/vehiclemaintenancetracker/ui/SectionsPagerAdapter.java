@@ -8,11 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import android.example.vehiclemaintenancetracker.DashboardFragment;
-import android.example.vehiclemaintenancetracker.HistoryFragment;
 import android.example.vehiclemaintenancetracker.R;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * A [FragmentPagerAdapter] that returns a fragment corresponding to

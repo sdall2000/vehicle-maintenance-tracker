@@ -1,11 +1,11 @@
-package android.example.vehiclemaintenancetracker.widget;
+package android.example.vehiclemaintenancetracker.ui.widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.example.vehiclemaintenancetracker.MainActivity;
+import android.example.vehiclemaintenancetracker.ui.MainActivity;
 import android.example.vehiclemaintenancetracker.R;
 import android.widget.RemoteViews;
 
