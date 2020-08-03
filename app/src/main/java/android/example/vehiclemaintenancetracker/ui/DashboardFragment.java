@@ -74,6 +74,8 @@ public class DashboardFragment extends Fragment {
 
                     // We need at least two mileage entries to calculate the average.
                     if (mileageEntries.size() >= 2) {
+                        binding.textViewAverageLabel.setVisibility(View.VISIBLE);
+                        binding.textViewMileageAverageLabel.setVisibility(View.VISIBLE);
 
                         // Get the last one in the list, which would be the oldest entry.
                         MileageEntry oldest = mileageEntries.get(mileageEntries.size() - 1);
@@ -97,6 +99,8 @@ public class DashboardFragment extends Fragment {
                         }
                     } else {
                         binding.textViewMileageAverage.setText("");
+                        binding.textViewAverageLabel.setVisibility(View.INVISIBLE);
+                        binding.textViewMileageAverageLabel.setVisibility(View.INVISIBLE);
                     }
                 } else {
                     binding.textViewMileage.setText("");
@@ -128,6 +132,10 @@ public class DashboardFragment extends Fragment {
         // Make sure a vehicle is selected.
         if (!TextUtils.isEmpty(selectedVehicleUid)) {
 
+            binding.textViewMileageLabel.setVisibility(View.VISIBLE);
+            binding.textViewReportedLabel.setVisibility(View.VISIBLE);
+            binding.buttonReportMileage.setVisibility(View.VISIBLE);
+
             // See if the vehicle uid has not already been set, or, if it doesn't equal the selected vehicle uid.
             // In those cases, we need to query for the vehicle.
             if (TextUtils.isEmpty(vehicleUid) || !vehicleUid.equals(selectedVehicleUid)) {
@@ -152,6 +160,11 @@ public class DashboardFragment extends Fragment {
             }
         } else {
             binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
+            binding.textViewMileageLabel.setVisibility(View.INVISIBLE);
+            binding.textViewReportedLabel.setVisibility(View.INVISIBLE);
+            binding.textViewAverageLabel.setVisibility(View.INVISIBLE);
+            binding.textViewMileageAverageLabel.setVisibility(View.INVISIBLE);
+            binding.buttonReportMileage.setVisibility(View.INVISIBLE);
         }
     }
 

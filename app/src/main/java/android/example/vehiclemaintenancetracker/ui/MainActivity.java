@@ -42,15 +42,6 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(sectionsPagerAdapter);
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
-
-
-//        binding.buttonSettings.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, VehicleChooserActivity.class);
-//                startActivityForResult(intent, ACTIVITY_RESULT_REQUEST_CODE);
-//            }
-//        });
     }
 
     @Override
