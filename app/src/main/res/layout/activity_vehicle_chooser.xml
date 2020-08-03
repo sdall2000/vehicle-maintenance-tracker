@@ -7,6 +7,18 @@
     tools:context=".ui.VehicleChooserActivity">
 
     <TextView
+        android:id="@+id/textViewSummary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/vehicle_select_summary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/textViewYear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,7 +26,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/year_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewSummary" />
 
     <Spinner
         android:id="@+id/spinnerYear"
@@ -76,11 +88,11 @@
         android:id="@+id/buttonSelectVehicle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="8dp"
         android:text="@string/button_select_vehicle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDate" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewSubmitInfo" />
 
     <TextView
         android:id="@+id/textView8"
@@ -95,12 +107,12 @@
         android:id="@+id/editTextMileage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerModel" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewStartingInfo" />
 
     <TextView
         android:id="@+id/textViewStartingDate"
@@ -121,4 +133,27 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toBottomOf="@+id/editTextMileage" />
+
+    <TextView
+        android:id="@+id/textViewStartingInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/starting_info_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerModel" />
+
+    <TextView
+        android:id="@+id/textViewSubmitInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/vehicle_submit_info"
+        android:textColor="#F44336"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextDate" />
 </androidx.constraintlayout.widget.ConstraintLayout>
