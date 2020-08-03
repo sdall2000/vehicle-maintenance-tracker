@@ -6,6 +6,7 @@ import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChooserBinding;
+import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -113,9 +114,19 @@ public class VehicleChooserActivity extends AppCompatActivity {
                                 AppDatabase.setStartingMileage(VehicleChooserActivity.this, mileage);
                                 AppDatabase.setStartingDateEpochMs(VehicleChooserActivity.this, date.getTime());
 
-                                Intent intent = new Intent();
-                                setResult(RESULT_OK, intent);
-                                finish();
+                                // Launch worker thread for db operations.
+                                AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // Clear out any existing data.
+                                        AppDatabase.getInstance(VehicleChooserActivity.this).deleteData();
+
+                                        // Complete this activity.
+                                        Intent intent = new Intent();
+                                        setResult(RESULT_OK, intent);
+                                        finish();
+                                    }
+                                });
                             }
 
                             @Override

@@ -98,6 +98,7 @@ public class DashboardFragment extends Fragment {
                             binding.textViewMileageAverage.setText(ValueFormatter.formatDistance(averagePerYear));
                         }
                     } else {
+                        // Not at least two mileage entries - can't calculate average miles.
                         binding.textViewMileageAverage.setText("");
                         binding.textViewAverageLabel.setVisibility(View.INVISIBLE);
                         binding.textViewMileageAverageLabel.setVisibility(View.INVISIBLE);
@@ -106,6 +107,10 @@ public class DashboardFragment extends Fragment {
                     binding.textViewMileage.setText("");
                     binding.textViewMileageReported.setText("");
                     binding.textViewMileageAverage.setText("");
+
+                    // Not at least two mileage entries - can't calculate average miles.
+                    binding.textViewAverageLabel.setVisibility(View.INVISIBLE);
+                    binding.textViewMileageAverageLabel.setVisibility(View.INVISIBLE);
                 }
             }
         });

@@ -23,4 +23,7 @@ public interface MaintenanceDao {
 
     @Insert
     void insert(MaintenanceEntry maintenanceEntry);
+
+    @Query("DELETE FROM maintenanceEntry")
+    void deleteAll();
 }

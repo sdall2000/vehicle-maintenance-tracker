@@ -24,4 +24,7 @@ public interface MileageEntryDao {
 
     @Delete
     void delete(MileageEntry mileageEntry);
+
+    @Query("DELETE FROM mileageEntry")
+    void deleteAll();
 }

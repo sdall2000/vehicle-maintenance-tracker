@@ -167,4 +167,9 @@ public abstract class AppDatabase extends RoomDatabase {
     private static SharedPreferences getSharedPreferences(Context context) {
         return context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
     }
+
+    public void deleteData() {
+        getMaintenanceDao().deleteAll();
+        getMileageEntryDao().deleteAll();
+    }
 }
