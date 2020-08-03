@@ -13,6 +13,7 @@ import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
+import android.example.vehiclemaintenancetracker.model.Status;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.ui.Styler;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
@@ -25,6 +26,8 @@ import com.google.firebase.database.DatabaseError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import timber.log.Timber;
 
 public class MaintenanceListViewWidgetService extends RemoteViewsService {
     public static final String PARAM_MAINTENANCE_ROW = "PARAM_MAINTENANCE_ROW";
@@ -74,14 +77,14 @@ class MaintenanceListRemoteViewsFactory implements RemoteViewsService.RemoteView
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-
+                            Timber.e("Database error when retrieving maintenance schedule: %s", databaseError.getMessage());
                         }
                     });
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    Timber.e("Database error when retrieving vehicle info: %s", databaseError.getMessage());
                 }
             });
         }
@@ -153,13 +156,13 @@ class MaintenanceListRemoteViewsFactory implements RemoteViewsService.RemoteView
 
         if (serviceNotification.getMileageDue() != null) {
             remoteViews.setTextViewText(R.id.textViewMileage, ValueFormatter.formatDistance(serviceNotification.getMileageDue()));
-            Styler.styleResourceStatus(context, remoteViews, R.id.textViewMileage, serviceNotification.getMileageStatus());
         }
 
         if (serviceNotification.getDateDue() != null) {
             remoteViews.setTextViewText(R.id.textViewDate, DateConverter.convertDateToString(context, serviceNotification.getDateDue()));
-            Styler.styleResourceStatus(context, remoteViews, R.id.textViewDate, serviceNotification.getDateStatus());
         }
+
+        Styler.styleImageViewResourceStatus(context, remoteViews, R.id.imageView, serviceNotification.getOverallStatus());
 
         // Set on click to launch main app.
         Intent fillInIntent = new Intent();

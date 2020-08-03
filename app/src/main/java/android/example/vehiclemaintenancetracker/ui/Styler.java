@@ -38,6 +38,21 @@ public class Styler {
         }
     }
 
+    public static void styleImageViewResourceStatus(Context context, RemoteViews remoteViews, int imageViewResource, Status status) {
+        switch(status) {
+            case Overdue:
+                remoteViews.setImageViewResource(imageViewResource, R.drawable.ic_overdue);
+                remoteViews.setContentDescription(imageViewResource, context.getString(R.string.service_overdue));
+                break;
+            case Upcoming:
+                remoteViews.setImageViewResource(imageViewResource, R.drawable.ic_upcoming);
+                remoteViews.setContentDescription(imageViewResource, context.getString(R.string.service_upcoming));
+                break;
+            case Good:
+                // Don't set any image if the status is good.
+        }
+    }
+
     public static int getStatusColor(Context context, Status status) {
         int color = 0;
 
@@ -57,13 +72,6 @@ public class Styler {
     }
 
     public static void styleResourceStatus(Context context, RemoteViews remoteViews, int resourceId, Status status) {
-        // Only set background color if the status is not good.
-        if (status != Status.Good) {
-            remoteViews.setInt(resourceId, "setBackgroundColor", getStatusColor(context, status));
-        }
-    }
-
-    public static void styleImageResourceStatus(Context context, RemoteViews remoteViews, int resourceId, Status status) {
         // Only set background color if the status is not good.
         if (status != Status.Good) {
             remoteViews.setInt(resourceId, "setBackgroundColor", getStatusColor(context, status));
