@@ -54,4 +54,6 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="settings_text">Settings</string>
+    <string name="service_overdue">Service Overdue</string>
+    <string name="service_upcoming">Service Upcoming</string>
 </resources>

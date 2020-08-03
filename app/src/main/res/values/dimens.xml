@@ -17,6 +17,7 @@
     <item name="notification_service_col_weight" format="float" type="dimen">0.4</item>
     <item name="notification_service_mileage_col_weight" format="float" type="dimen">0.3</item>
     <item name="notification_service_date_col_weight" format="float" type="dimen">0.3</item>
+    <item name="notification_service_status_col_weight" type="dimen" format="float">0.1</item>
 
     <!--
 Refer to App Widget Documentation for margin information

@@ -11,6 +11,7 @@ import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNoti
 import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
+import android.example.vehiclemaintenancetracker.model.Status;
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
@@ -240,16 +241,18 @@ public class ServiceNotificationsFragment extends Fragment {
 
                 if (serviceNotification.getMileageDue() != null) {
                     binding.textViewMileage.setText(ValueFormatter.formatDistance(serviceNotification.getMileageDue()));
-                    Styler.styleTextViewStatus(getContext(), binding.textViewMileage, serviceNotification.getMileageStatus());
                 } else {
                     binding.textViewMileage.setText("");
                 }
 
                 if (serviceNotification.getDateDue() != null) {
                     binding.textViewDate.setText(DateConverter.convertDateToString(parent.getContext(), serviceNotification.getDateDue()));
-                    Styler.styleTextViewStatus(getContext(), binding.textViewDate, serviceNotification.getDateStatus());
                 } else {
                     binding.textViewDate.setText("");
+                }
+
+                if (serviceNotification.getOverallStatus() != Status.Good) {
+                    Styler.styleImageViewStatus(getContext(), binding.imageView, serviceNotification.getOverallStatus());
                 }
             }
         }
