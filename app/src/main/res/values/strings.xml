@@ -60,4 +60,5 @@
     <string name="vehicle_select_summary">Please choose your vehicle.  Note that the free version of this app only supports managing a single vehicle.  Purchase the pro version to manage multiple vehicles.</string>
     <string name="starting_info_text">The starting date and mileage represent when you purchased the vehicle, and its maintenance is considered to be up to date.</string>
     <string name="vehicle_submit_info">Warning!  Clicking submit will erase any previously saved vehicle maintenance and mileage data.</string>
+    <string name="maintenance_up_to_date">Congratulations, your vehicle\'s maintenance is up to date!</string>
 </resources>

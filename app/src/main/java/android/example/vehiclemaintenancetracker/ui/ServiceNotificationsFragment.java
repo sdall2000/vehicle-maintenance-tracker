@@ -191,8 +191,10 @@ public class ServiceNotificationsFragment extends Fragment {
                     AppDatabase.getMileageWarningThreshold(getContext()),
                     AppDatabase.getDayWarningThreshold(getContext()),
                     vehicleInfo.getStartingMileage(),
-                    vehicleInfo.getStartingDateEpochMs()
-            );
+                    vehicleInfo.getStartingDateEpochMs());
+
+            // If there are no service notifications, we want to show the text view indicating maintenance is up to date.
+            binding.textViewMaintenanceUpToDate.setVisibility(serviceNotifications.size() == 0 ? View.VISIBLE : View.INVISIBLE);
 
             binding.recyclerView.setAdapter(new NotificationsRecylerViewAdapter(ServiceNotificationsFragment.this, serviceNotifications));
         }
