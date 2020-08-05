@@ -45,8 +45,6 @@ public class FirebaseDatabaseUtils {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     Vehicle vehicle = ds.getValue(Vehicle.class);
                     vehicles.put(ds.getKey(), vehicle);
-
-                    Timber.d(ds.getKey() + ", " + ds.getChildren().iterator().next().getValue());
                 }
 
                 listener.onDataReady(vehicles);
@@ -180,8 +178,6 @@ public class FirebaseDatabaseUtils {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     MaintenanceScheduleEntry entry = ds.getValue(MaintenanceScheduleEntry.class);
                     entries.add(entry);
-
-                    Timber.d(ds.getKey() + ", " + ds.getChildren().iterator().next().getValue());
                 }
 
                 final AtomicInteger atomicInteger = new AtomicInteger(0);
