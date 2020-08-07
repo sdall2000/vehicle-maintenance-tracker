@@ -38,6 +38,7 @@ public class UpdateNotificationsService extends Service {
                     ServiceNotificationGenerator.generateServiceNotifications(getApplicationContext(), new ServiceNotificationGenerator.ServiceNotificationsListener() {
                         @Override
                         public void onNotificationsReady(List<ServiceNotification> serviceNotifications) {
+                            Timber.d("%d service notifications generated", serviceNotifications.size());
                             // Then pass the notifications to the app widgets.
                             for (int appWidgetId : appWidgetIds) {
                                 updateAppWidget(getApplicationContext(), appWidgetManager, appWidgetId, serviceNotifications);
@@ -69,6 +70,8 @@ public class UpdateNotificationsService extends Service {
         remoteViews.setOnClickPendingIntent(R.id.app_widget_layout, clickPendingIntent);
         remoteViews.setPendingIntentTemplate(R.id.maintenanceWidgetListView, clickPendingIntent);
 
+        String json = "";
+
         if (serviceNotifications.size() > 0) {
             // There are notifications.  The up-to-date view should not be displayed.
             remoteViews.setViewVisibility(R.id.textViewServiceUpToDate, View.INVISIBLE);
@@ -80,16 +83,23 @@ public class UpdateNotificationsService extends Service {
             collection.setServiceNotifications(serviceNotifications);
 
             // Serialize our data to a JSON string.
-            String json = gson.toJson(collection);
+            json = gson.toJson(collection);
 
             Intent listIntent = new Intent(context, MaintenanceListViewWidgetService.class);
-            listIntent.putExtra(MaintenanceListViewWidgetService.SERVICE_NOTIFICATIONS, json);
+            listIntent.putExtra(MaintenanceListRemoteViewsFactory.SERVICE_NOTIFICATIONS_EXTRA, json);
             remoteViews.setRemoteAdapter(R.id.maintenanceWidgetListView, listIntent);
         } else {
             // There are no notifications.  The up-to-date view should be displayed.
             remoteViews.setViewVisibility(R.id.textViewServiceUpToDate, View.VISIBLE);
             remoteViews.setViewVisibility(R.id.header_rows, View.INVISIBLE);
         }
+
+        // Post the intent to update the service notifications in the list.
+        Intent listIntent = new Intent(MaintenanceListRemoteViewsFactory.ACTION_NOTIFICATIONS_CHANGED);
+        listIntent.putExtra(MaintenanceListRemoteViewsFactory.SERVICE_NOTIFICATIONS_EXTRA, json);
+        sendBroadcast(listIntent);
+
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.maintenanceWidgetListView);
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);

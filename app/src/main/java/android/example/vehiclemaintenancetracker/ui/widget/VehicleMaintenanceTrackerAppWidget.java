@@ -23,11 +23,11 @@ public class VehicleMaintenanceTrackerAppWidget extends AppWidgetProvider {
             }
         });
 
-        // TODO Vogella example builds up a list of all ids.
+        Timber.d("onUpdate");
 
+        // Launch the service to perform the update.
         Intent intent = new Intent(context.getApplicationContext(), UpdateNotificationsService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
-
         context.startService(intent);
     }
 

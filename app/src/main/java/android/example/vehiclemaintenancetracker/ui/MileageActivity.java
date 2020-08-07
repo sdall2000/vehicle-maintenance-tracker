@@ -1,11 +1,15 @@
 package android.example.vehiclemaintenancetracker.ui;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMileageBinding;
 import android.example.vehiclemaintenancetracker.databinding.ContentMileageBinding;
+import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
@@ -74,8 +78,14 @@ public class MileageActivity extends AppCompatActivity {
                         AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
                             @Override
                             public void run() {
+                                // Insert a new mileage entry
                                 MileageEntry mileageEntry = new MileageEntry(mileage, date);
                                 AppDatabase.getInstance(MileageActivity.this).getMileageEntryDao().insert(mileageEntry);
+
+                                // Update the app widgets.
+                                updateAppWidgets();
+
+                                // Complete the activity
                                 finish();
                             }
                         });
@@ -136,5 +146,13 @@ public class MileageActivity extends AppCompatActivity {
         }
 
         return inputValid;
+    }
+
+    private void updateAppWidgets() {
+        Intent intent = new Intent(this, VehicleMaintenanceTrackerAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(this).getAppWidgetIds(new ComponentName(this, VehicleMaintenanceTrackerAppWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
     }
 }

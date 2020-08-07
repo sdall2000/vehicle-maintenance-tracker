@@ -1,11 +1,14 @@
 package android.example.vehiclemaintenancetracker.ui;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChooserBinding;
+import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.os.Bundle;
 import android.view.View;
@@ -121,6 +124,9 @@ public class VehicleChooserActivity extends AppCompatActivity {
                                         // Clear out any existing data.
                                         AppDatabase.getInstance(VehicleChooserActivity.this).deleteData();
 
+                                        // Update the app widgets.
+                                        updateAppWidgets();
+
                                         // Complete this activity.
                                         Intent intent = new Intent();
                                         setResult(RESULT_OK, intent);
@@ -162,6 +168,14 @@ public class VehicleChooserActivity extends AppCompatActivity {
         } else {
             populateYearSpinner();
         }
+    }
+
+    private void updateAppWidgets() {
+        Intent intent = new Intent(this, VehicleMaintenanceTrackerAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(this).getAppWidgetIds(new ComponentName(this, VehicleMaintenanceTrackerAppWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
     }
 
     private void populateSpinnersWithVehicle(String selectedVehicleUid) {

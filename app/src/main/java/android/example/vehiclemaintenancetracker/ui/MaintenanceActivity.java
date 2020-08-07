@@ -2,6 +2,9 @@ package android.example.vehiclemaintenancetracker.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
@@ -9,6 +12,7 @@ import android.example.vehiclemaintenancetracker.data.MaintenanceEntry;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMaintenanceBinding;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
+import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.os.Bundle;
 import android.view.View;
@@ -76,6 +80,10 @@ public class MaintenanceActivity extends AppCompatActivity {
 
                                 appDatabase.getMaintenanceDao().insert(maintenanceEntry);
 
+                                // Update app widgets.
+                                updateAppWidgets();
+
+                                // Complete the activity.
                                 finish();
                             }
                         });
@@ -118,7 +126,7 @@ public class MaintenanceActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.e("Error populating maintenance spinner: " + databaseError.getMessage());
+                Timber.e("Error populating maintenance spinner: %s", databaseError.getMessage());
             }
         });
     }
@@ -157,5 +165,13 @@ public class MaintenanceActivity extends AppCompatActivity {
         }
 
         return inputValid;
+    }
+
+    private void updateAppWidgets() {
+        Intent intent = new Intent(this, VehicleMaintenanceTrackerAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(this).getAppWidgetIds(new ComponentName(this, VehicleMaintenanceTrackerAppWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
     }
 }
