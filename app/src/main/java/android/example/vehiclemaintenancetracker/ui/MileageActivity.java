@@ -46,6 +46,7 @@ public class MileageActivity extends AppCompatActivity {
         editTextDate = contentMileageBinding.editTextDate;
         editTextMileage = contentMileageBinding.editTextMileage;
 
+        // Default to today's date.
         editTextDate.setText(dateFormat.format(new Date()));
 
         AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {

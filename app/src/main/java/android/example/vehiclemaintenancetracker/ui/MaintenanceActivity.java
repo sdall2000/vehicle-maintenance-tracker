@@ -15,6 +15,7 @@ import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import timber.log.Timber;
 
@@ -42,6 +44,9 @@ public class MaintenanceActivity extends AppCompatActivity {
 
         binding = ActivityMaintenanceBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Default to today's date.
+        binding.editTextDatePerformed.setText(dateFormat.format(new Date()));
 
         binding.buttonSubmitMaintenance.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,7 +64,13 @@ public class MaintenanceActivity extends AppCompatActivity {
                         final String maintenanceItemUid = entry.getMaintenanceItemId();
 
                         final String provider = binding.editTextTextProvider.getText().toString();
-                        final Double cost = Double.parseDouble(binding.editTextCost.getText().toString());
+
+                        // Cost is optional.
+                        final AtomicReference<Double> cost = new AtomicReference<>(null);
+
+                        if (!TextUtils.isEmpty(binding.editTextCost.getText())) {
+                            cost.set(Double.parseDouble(binding.editTextCost.getText().toString()));
+                        }
 
                         // Must be done on a background thread.
                         AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
@@ -76,7 +87,7 @@ public class MaintenanceActivity extends AppCompatActivity {
                                         mileageUid,
                                         maintenanceItemUid,
                                         provider,
-                                        cost);
+                                        cost.get());
 
                                 appDatabase.getMaintenanceDao().insert(maintenanceEntry);
 
