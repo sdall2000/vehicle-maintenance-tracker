@@ -1,5 +1,6 @@
 package android.example.vehiclemaintenancetracker.ui;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMainBinding;
@@ -8,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
@@ -19,8 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
-    private final static int ACTIVITY_RESULT_REQUEST_CODE = 1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,27 +52,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // Bring up settings.
         if (item.getItemId() == R.id.action_settings) {
+            // Add explode transition.
+            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle();
+
             Intent intent = new Intent(MainActivity.this, VehicleChooserActivity.class);
-            startActivityForResult(intent, ACTIVITY_RESULT_REQUEST_CODE);
+            startActivity(intent, bundle);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-
-        if (resultCode == resultCode) {
-            // TODO the user clicked submit on the vehicle chooser activity.
-            // They may have selected a new vehicle, or set the starting mileage and/or
-            // starting date.
-
-            // Should trigger a service notifications refresh.
-        }
-
-
-        Timber.d("onActivityResult requestCode: %d, resultCode: %d",
-                requestCode, resultCode);
     }
 }

@@ -1,5 +1,6 @@
 package android.example.vehiclemaintenancetracker.ui;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
@@ -102,9 +103,12 @@ public class ServiceNotificationsFragment extends Fragment {
         binding.buttonEnterService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Add explode transition.
+                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle();
+
                 Intent intent = new Intent(getActivity(), MaintenanceActivity.class);
                 intent.putExtra(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
-                startActivity(intent);
+                startActivity(intent, bundle);
             }
         });
     }

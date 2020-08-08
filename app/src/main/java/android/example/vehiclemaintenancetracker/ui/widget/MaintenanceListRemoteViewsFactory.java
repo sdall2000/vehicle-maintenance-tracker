@@ -79,21 +79,23 @@ public class MaintenanceListRemoteViewsFactory implements RemoteViewsService.Rem
 
     @Override
     public RemoteViews getViewAt(int position) {
-        ServiceNotification serviceNotification = serviceNotifications.get(position);
 
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.notification_list_content);
 
-        remoteViews.setTextViewText(R.id.textViewService, serviceNotification.getService());
+        if (serviceNotifications.size() > 0) {
+            ServiceNotification serviceNotification = serviceNotifications.get(position);
+            remoteViews.setTextViewText(R.id.textViewService, serviceNotification.getService());
 
-        if (serviceNotification.getMileageDue() != null) {
-            remoteViews.setTextViewText(R.id.textViewMileage, ValueFormatter.formatDistance(serviceNotification.getMileageDue()));
+            if (serviceNotification.getMileageDue() != null) {
+                remoteViews.setTextViewText(R.id.textViewMileage, ValueFormatter.formatDistance(serviceNotification.getMileageDue()));
+            }
+
+            if (serviceNotification.getDateDue() != null) {
+                remoteViews.setTextViewText(R.id.textViewDate, DateConverter.convertDateToString(context, serviceNotification.getDateDue()));
+            }
+
+            Styler.styleImageViewResourceStatus(context, remoteViews, R.id.imageView, serviceNotification.getOverallStatus());
         }
-
-        if (serviceNotification.getDateDue() != null) {
-            remoteViews.setTextViewText(R.id.textViewDate, DateConverter.convertDateToString(context, serviceNotification.getDateDue()));
-        }
-
-        Styler.styleImageViewResourceStatus(context, remoteViews, R.id.imageView, serviceNotification.getOverallStatus());
 
         // Set on click to launch main app.
         Intent fillInIntent = new Intent();

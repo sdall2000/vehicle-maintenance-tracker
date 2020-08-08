@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
+import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChooserBinding;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
@@ -123,6 +124,10 @@ public class VehicleChooserActivity extends AppCompatActivity {
                                     public void run() {
                                         // Clear out any existing data.
                                         AppDatabase.getInstance(VehicleChooserActivity.this).deleteData();
+
+                                        // Create the first mileage entry based on the starting mileage/date entered for the vehicle.
+                                        MileageEntry mileageEntry = new MileageEntry(mileage, date);
+                                        AppDatabase.getInstance(VehicleChooserActivity.this).getMileageEntryDao().insert(mileageEntry);
 
                                         // Update the app widgets.
                                         updateAppWidgets();
