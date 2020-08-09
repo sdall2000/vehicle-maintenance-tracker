@@ -12,7 +12,7 @@
 /captures
 .externalNativeBuild
 .cxx
-
+*.pptx
 .idea/
 
 Prototypes/

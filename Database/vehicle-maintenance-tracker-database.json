@@ -1,41 +1,22 @@
 {
-    "vehicleModels": {
-        "1": {
-            "name": "Toyota"
-        },
-        "2": {
-            "name": "Nissan"
-        },
-        "3": {
-            "name": "Honda"
-        }
-    },
-    "vehicleModelMakes": {
-        "1": {
-            "vehicleModelId": "1",
-            "name": "RAV4"
-        },
-        "2": {
-            "vehicleModelId": "2",
-            "name": "Altima"
-        },
-        "3": {
-            "vehicleModelId": "3",
-            "name": "Civic"
-        }
-    },
     "vehicles": {
         "1": {
-            "vehicleModelMakeId": "1",
-            "year": 2016
+            "make": "Toyota",
+            "model": "RAV4",
+            "year": 2016,
+            "maintenanceScheduleUid": "1"
         },
         "2": {
-            "vehicleModelMakeId": "2",
-            "year": 2018
+            "make": "Nissan",
+            "model": "Altima",
+            "year": 2018,
+            "maintenanceScheduleUid": "2"
         },
         "3": {
-            "vehicleModelMakeId": "3",
-            "year": 2014
+            "make": "Honda",
+            "model": "Civic",
+            "year": 2009,
+            "maintenanceScheduleUid": "3"
         }
     },
     "maintenanceItem": {
@@ -52,7 +33,7 @@
             "name": "Replace Wiper Blades"
         },
         "5": {
-            "name": "Transmission Fluid Change"    
+            "name": "Transmission Fluid Change"
         }
     },
     "maintenanceSchedule": {
@@ -77,16 +58,5 @@
             {"maintenanceItemId": "4", "mileageInterval": 10000},
             {"maintenanceItemId": "5", "mileageInterval": 45000}
         ]
-    },
-    "vehicleMaintenanceSchedule": {
-        "1": {
-            "maintenanceScheduleId": "1"
-        },
-        "2": {
-            "maintenanceScheduleId": "2"
-        },
-        "3": {
-            "maintenanceScheduleId": "2"
-        }
     }
 }

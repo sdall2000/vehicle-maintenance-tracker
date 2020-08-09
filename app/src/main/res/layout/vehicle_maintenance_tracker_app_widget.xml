@@ -1,0 +1,88 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_widget_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:baselineAligned="false"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#6200ee"
+        android:text="@string/app_widget_title"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <LinearLayout
+        android:id="@+id/header_rows"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="@dimen/notification_service_col_weight">
+
+            <TextView
+                android:id="@+id/textViewService"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/service_col_label"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="@dimen/notification_service_mileage_col_weight">
+
+            <TextView
+                android:id="@+id/textViewMileage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mileage_col_label"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="@dimen/notification_service_date_col_weight">
+
+            <TextView
+                android:id="@+id/textViewDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/date_col_label"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="@dimen/notification_service_status_col_weight"/>
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/maintenanceWidgetListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/textViewServiceUpToDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/maintenance_up_to_date"
+        android:textAlignment="center"
+        android:textColor="#8BC34A" />
+
+</LinearLayout>
