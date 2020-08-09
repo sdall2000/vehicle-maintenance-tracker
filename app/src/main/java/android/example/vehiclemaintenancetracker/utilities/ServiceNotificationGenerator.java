@@ -202,6 +202,7 @@ public class ServiceNotificationGenerator {
         Status dayStatus = Status.Good;
         Date dateDue = null;
 
+        // See if the schedule maintenance has a date component.
         if (maintenanceScheduleEntry.getDayInterval() != null) {
             // For example, the day interval might be 90 days.
             // If it has been 85 days since the last service, this should be flagged
@@ -213,13 +214,12 @@ public class ServiceNotificationGenerator {
             calendar.setTime(new Date(lastServiceDateEpochMs));
             calendar.add(Calendar.DATE, maintenanceScheduleEntry.getDayInterval());
             dateDue = calendar.getTime();
-        }
 
-        // See if we care about date criteria.
-        if (maintenanceScheduleEntry.getDayInterval() != null) {
+            // Calculate how many days it has been since the last service or vehicle start date.
             long dayDeltaMs = currentDateEpochMs - lastServiceDateEpochMs;
             int dayDelta = Math.round(dayDeltaMs / MS_PER_DAY);
 
+            // See if the day delta exceeds the upcoming or overdue timeframes.
             if (dayDelta >= maintenanceScheduleEntry.getDayInterval()) {
                 dayStatus = Status.Overdue;
             } else if (dayDelta + dateWarningThresholdDays >= maintenanceScheduleEntry.getDayInterval()) {
