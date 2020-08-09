@@ -159,7 +159,7 @@ public class VehicleChooserActivity extends AppCompatActivity {
 
         if (selectedVehicleUid != null) {
             // If the vehicle uid has been set, then the starting mileage/date will be as well.
-            editTextMileage.setText(Integer.toString(AppDatabase.getStartingMileage(this)));
+            editTextMileage.setText(String.format("%d", AppDatabase.getStartingMileage(this)));
 
             long epochMs = AppDatabase.getStartingDateEpochMs(this);
             if (epochMs != 0) {
