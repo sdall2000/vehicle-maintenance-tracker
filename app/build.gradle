@@ -2,6 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    signingConfigs {
+        config {
+            storeFile file('C:\\Users\\sdall\\Documents\\Projects\\Udacity\\VehicleMaintenanceTracker\\keystore.jks')
+            storePassword 'udacity'
+            keyAlias 'vmt'
+            keyPassword 'udacity'
+        }
+    }
     compileSdkVersion 29
 
     buildFeatures {
@@ -22,6 +30,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 
