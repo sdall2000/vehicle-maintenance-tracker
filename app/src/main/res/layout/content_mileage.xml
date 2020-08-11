@@ -20,6 +20,7 @@
         android:id="@+id/editTextMileage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:ems="10"
         android:inputType="number"
@@ -31,18 +32,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/effective_date_label"
-        app:layout_constraintBottom_toBottomOf="@+id/editTextDate"
+        app:layout_constraintBottom_toBottomOf="@+id/textFieldDate"
         app:layout_constraintStart_toStartOf="@+id/textViewEnterMileageLabel"
-        app:layout_constraintTop_toTopOf="@+id/editTextDate" />
+        app:layout_constraintTop_toTopOf="@+id/textFieldDate" />
 
-    <EditText
-        android:id="@+id/editTextDate"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/textFieldDate"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="date"
-        app:layout_constraintStart_toEndOf="@+id/textViewEnterMileageLabel"
-        app:layout_constraintTop_toBottomOf="@+id/editTextMileage" />
+        app:layout_constraintBottom_toBottomOf="@+id/imageButton"
+        app:layout_constraintEnd_toEndOf="@+id/editTextMileage"
+        app:layout_constraintStart_toStartOf="@+id/editTextMileage"
+        app:layout_constraintTop_toTopOf="@+id/imageButton" />
 
     <Button
         android:id="@+id/buttonSubmit"
@@ -62,5 +65,15 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDate" />
+        app:layout_constraintTop_toBottomOf="@+id/textFieldDate" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toEndOf="@+id/textFieldDate"
+        app:layout_constraintTop_toBottomOf="@+id/editTextMileage"
+        app:srcCompat="@drawable/calendar" />
 </androidx.constraintlayout.widget.ConstraintLayout>

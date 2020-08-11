@@ -14,6 +14,7 @@ import android.example.vehiclemaintenancetracker.databinding.ActivityMaintenance
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
+import android.example.vehiclemaintenancetracker.utilities.DatePickerHelper;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -45,14 +46,19 @@ public class MaintenanceActivity extends AppCompatActivity {
         binding = ActivityMaintenanceBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Default to today's date.
-        binding.editTextDatePerformed.setText(dateFormat.format(new Date()));
+        // Use the DatePickerHelper to configure date picker functionality and set initial value.
+        DatePickerHelper.configureDateChooser(
+                this,
+                binding.textViewDatePerformed,
+                binding.imageButton,
+                dateFormat,
+                new Date());
 
         binding.buttonSubmitMaintenance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (inputValid()) {
-                    String dateString = binding.editTextDatePerformed.getText().toString();
+                    String dateString = binding.textViewDatePerformed.getText().toString();
                     String mileageString = binding.editTextMileage.getText().toString();
 
                     try {
@@ -145,20 +151,20 @@ public class MaintenanceActivity extends AppCompatActivity {
     private boolean inputValid() {
         boolean inputValid = true;
 
-        String dateString = binding.editTextDatePerformed.getText().toString();
+        String dateString = binding.textViewDatePerformed.getText().toString();
         String mileageString = binding.editTextMileage.getText().toString();
 
-        binding.editTextDatePerformed.setError(null);
+        binding.textViewDatePerformed.setError(null);
         binding.editTextMileage.setError(null);
 
         if (dateString.isEmpty()) {
-            binding.editTextDatePerformed.setError(getString(R.string.validation_required_field));
+            binding.textViewDatePerformed.setError(getString(R.string.validation_required_field));
             inputValid = false;
         } else {
             try {
                 dateFormat.parse(dateString);
             } catch (ParseException e) {
-                binding.editTextDatePerformed.setError(getString(R.string.validation_invalid_date));
+                binding.textViewDatePerformed.setError(getString(R.string.validation_invalid_date));
                 inputValid = false;
             }
         }

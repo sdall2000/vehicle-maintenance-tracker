@@ -1,6 +1,5 @@
 package android.example.vehiclemaintenancetracker.ui;
 
-import android.app.DatePickerDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -13,11 +12,11 @@ import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChoo
 import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
+import android.example.vehiclemaintenancetracker.utilities.DatePickerHelper;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -44,8 +42,6 @@ public class VehicleChooserActivity extends AppCompatActivity {
     private Integer vehicleYear;
     private String vehicleMake;
     private String vehicleModel;
-
-    private final Calendar calendar = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,27 +90,6 @@ public class VehicleChooserActivity extends AppCompatActivity {
                 Timber.d("No model selected");
             }
         });
-
-        final DatePickerDialog.OnDateSetListener onDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                Calendar tmpCalendar = Calendar.getInstance();
-                tmpCalendar.set(year, month, dayOfMonth);
-                binding.textFieldDate.setText(dateFormat.format(tmpCalendar.getTime()));
-            }
-        };
-
-        View.OnClickListener onClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new DatePickerDialog(VehicleChooserActivity.this, onDateSetListener, calendar
-                        .get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                        calendar.get(Calendar.DAY_OF_MONTH)).show();
-            }
-        };
-
-        binding.textFieldDate.setOnClickListener(onClickListener);
-        binding.imageButton.setOnClickListener(onClickListener);
 
         binding.buttonSelectVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -200,7 +175,14 @@ public class VehicleChooserActivity extends AppCompatActivity {
         }
 
         binding.editTextMileage.setText(String.format("%d", startingMileage));
-        binding.textFieldDate.setText(dateFormat.format(startingDate));
+
+        // Use the DatePickerHelper to configure date picker functionality and set initial value.
+        DatePickerHelper.configureDateChooser(
+                this,
+                binding.textFieldDate,
+                binding.imageButton,
+                dateFormat,
+                startingDate);
     }
 
     private void updateAppWidgets() {
