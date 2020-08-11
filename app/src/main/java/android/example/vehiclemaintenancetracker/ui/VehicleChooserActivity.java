@@ -1,5 +1,6 @@
 package android.example.vehiclemaintenancetracker.ui;
 
+import android.app.DatePickerDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -9,13 +10,14 @@ import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChooserBinding;
+import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
+import android.widget.DatePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +27,7 @@ import com.google.firebase.database.DatabaseError;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -35,16 +38,14 @@ public class VehicleChooserActivity extends AppCompatActivity {
 
     private DateFormat dateFormat;
 
-    // Will populate for easy reference
-    private EditText editTextDate;
-    private EditText editTextMileage;
-
     private ActivityVehicleChooserBinding binding;
 
     // These are used as the selected item in the spinner, if they are set.
     private Integer vehicleYear;
     private String vehicleMake;
     private String vehicleModel;
+
+    private final Calendar calendar = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +54,6 @@ public class VehicleChooserActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         dateFormat = android.text.format.DateFormat.getDateFormat(this);
-
-        editTextDate = binding.editTextDate;
-        editTextMileage = binding.editTextMileage;
 
         binding.spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -97,12 +95,33 @@ public class VehicleChooserActivity extends AppCompatActivity {
             }
         });
 
+        final DatePickerDialog.OnDateSetListener onDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                Calendar tmpCalendar = Calendar.getInstance();
+                tmpCalendar.set(year, month, dayOfMonth);
+                binding.textFieldDate.setText(dateFormat.format(tmpCalendar.getTime()));
+            }
+        };
+
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new DatePickerDialog(VehicleChooserActivity.this, onDateSetListener, calendar
+                        .get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        };
+
+        binding.textFieldDate.setOnClickListener(onClickListener);
+        binding.imageButton.setOnClickListener(onClickListener);
+
         binding.buttonSelectVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (inputValid()) {
-                    String dateString = editTextDate.getText().toString();
-                    String mileageString = editTextMileage.getText().toString();
+                    String dateString = binding.textFieldDate.getText().toString();
+                    String mileageString = binding.editTextMileage.getText().toString();
 
                     try {
                         final Date date = dateFormat.parse(dateString);
@@ -155,24 +174,33 @@ public class VehicleChooserActivity extends AppCompatActivity {
             }
         });
 
-        String selectedVehicleUid = AppDatabase.getVehicleUid(this);
+        VehicleInfo vehicleInfo = AppDatabase.getVehicleInfo(this);
 
-        if (selectedVehicleUid != null) {
+        Date startingDate;
+        int startingMileage;
+
+        if (vehicleInfo != null) {
             // If the vehicle uid has been set, then the starting mileage/date will be as well.
-            editTextMileage.setText(String.format("%d", AppDatabase.getStartingMileage(this)));
+            startingMileage = vehicleInfo.getStartingMileage();
 
-            long epochMs = AppDatabase.getStartingDateEpochMs(this);
-            if (epochMs != 0) {
-                Date date = new Date(epochMs);
-                editTextDate.setText(dateFormat.format(date));
-            }
-        }
+            // If the starting date is already set, use that date instead.
+            long epochMs = vehicleInfo.getStartingDateEpochMs();
+            startingDate = new Date(epochMs);
 
-        if (selectedVehicleUid != null) {
-            populateSpinnersWithVehicle(selectedVehicleUid);
+            // Populate spinners from selected vehicle.
+            populateSpinnersWithVehicle(vehicleInfo.getVehicleUid());
         } else {
+            // No vehicle selected yet.
+            // Set default starting values.
+            startingMileage = 0;
+            startingDate = new Date();
+
+            // Populate spinners, starting with the year.
             populateYearSpinner();
         }
+
+        binding.editTextMileage.setText(String.format("%d", startingMileage));
+        binding.textFieldDate.setText(dateFormat.format(startingDate));
     }
 
     private void updateAppWidgets() {
@@ -295,32 +323,32 @@ public class VehicleChooserActivity extends AppCompatActivity {
     private boolean inputValid() {
         boolean inputValid = true;
 
-        String dateString = editTextDate.getText().toString();
-        String mileageString = editTextMileage.getText().toString();
+        String dateString = binding.textFieldDate.getText().toString();
+        String mileageString = binding.editTextMileage.getText().toString();
 
-        editTextDate.setError(null);
-        editTextMileage.setError(null);
+        binding.textFieldDate.setError(null);
+        binding.editTextMileage.setError(null);
 
         if (dateString.isEmpty()) {
-            editTextDate.setError(getString(R.string.validation_required_field));
+            binding.textFieldDate.setError(getString(R.string.validation_required_field));
             inputValid = false;
         } else {
             try {
                 dateFormat.parse(dateString);
             } catch (ParseException e) {
-                editTextDate.setError(getString(R.string.validation_invalid_date));
+                binding.textFieldDate.setError(getString(R.string.validation_invalid_date));
                 inputValid = false;
             }
         }
 
         if (mileageString.isEmpty()) {
-            editTextMileage.setError(getString(R.string.validation_required_field));
+            binding.editTextMileage.setError(getString(R.string.validation_required_field));
             inputValid = false;
         } else {
             try {
                 Integer.parseInt(mileageString);
             } catch (NumberFormatException e) {
-                editTextMileage.setError(getString(R.string.validation_invalid_mileage));
+                binding.editTextMileage.setError(getString(R.string.validation_invalid_mileage));
                 inputValid = false;
             }
         }
