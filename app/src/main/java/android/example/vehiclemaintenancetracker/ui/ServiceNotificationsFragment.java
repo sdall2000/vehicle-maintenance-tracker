@@ -87,9 +87,6 @@ public class ServiceNotificationsFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = FragmentServiceNotificationsBinding.inflate(inflater, container, false);
 
-//        View view = inflater.inflate(R.layout.fragment_service_notifications, container, false);
-
-//        View recyclerView = view.findViewById(R.id.recyclerView);
         setupRecyclerView();
         setupObservers();
 
@@ -124,19 +121,22 @@ public class ServiceNotificationsFragment extends Fragment {
                         @Override
                         public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceScheduleEntries) {
                             ServiceNotificationsFragment.this.maintenanceScheduleEntries = maintenanceScheduleEntries;
+
+                            Timber.d("Vehicle data ready.  Recalculating service notifications");
+
                             recalculateServiceNotifications();
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-
+                            Timber.e("Failed to get maintenance schedule: %s", databaseError.getMessage());
                         }
                     });
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    Timber.e("Failed to get vehicle info: %s", databaseError.getMessage());
                 }
             });
 
@@ -154,6 +154,8 @@ public class ServiceNotificationsFragment extends Fragment {
             public void onChanged(List<MileageEntry> mileageEntries) {
                 ServiceNotificationsFragment.this.mileageEntries = mileageEntries;
 
+                Timber.d("Mileage observer fired in ServiceNotificationsFragment");
+
                 recalculateServiceNotifications();
             }
         });
@@ -165,6 +167,8 @@ public class ServiceNotificationsFragment extends Fragment {
             @Override
             public void onChanged(List<MaintenanceEntryJoined> maintenanceEntries) {
                 ServiceNotificationsFragment.this.maintenanceEntries = maintenanceEntries;
+
+                Timber.d("Maintenance observer fired in ServiceNotificationsFragment");
 
                 recalculateServiceNotifications();
             }
@@ -197,10 +201,17 @@ public class ServiceNotificationsFragment extends Fragment {
                     vehicleInfo.getStartingMileage(),
                     vehicleInfo.getStartingDateEpochMs());
 
+            Timber.d("There are %d service notifications", serviceNotifications.size());
+
             // If there are no service notifications, we want to show the text view indicating maintenance is up to date.
             binding.textViewMaintenanceUpToDate.setVisibility(serviceNotifications.size() == 0 ? View.VISIBLE : View.INVISIBLE);
 
             binding.recyclerView.setAdapter(new NotificationsRecylerViewAdapter(ServiceNotificationsFragment.this, serviceNotifications));
+        } else {
+            Timber.d("A field is null %s %s %s",
+                    maintenanceEntries == null ? "maintenanceEntries" : "",
+                    maintenanceScheduleEntries == null ? "maintenanceScheduleEntries" : "",
+                    vehicleInfo == null ? "vehicleInfo" : "");
         }
     }
 
