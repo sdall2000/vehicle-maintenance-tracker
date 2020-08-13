@@ -7,7 +7,7 @@ import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
-import android.example.vehiclemaintenancetracker.data.Vehicle;
+import android.example.vehiclemaintenancetracker.data.VehicleDetails;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
@@ -114,29 +114,19 @@ public class ServiceNotificationsFragment extends Fragment {
         vehicleInfo = AppDatabase.getVehicleInfo(getActivity());
 
         if (vehicleInfo != null) {
-            FirebaseDatabaseUtils.getInstance().getVehicle(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
+            FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {
                 @Override
-                public void onDataReady(final Vehicle vehicle) {
-                    FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
-                        @Override
-                        public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceScheduleEntries) {
-                            ServiceNotificationsFragment.this.maintenanceScheduleEntries = maintenanceScheduleEntries;
+                public void onDataReady(final VehicleDetails vehicleDetails) {
+                    ServiceNotificationsFragment.this.maintenanceScheduleEntries = vehicleDetails.getMaintenanceSchedule();
 
-                            Timber.d("Vehicle data ready.  Recalculating service notifications");
+                    Timber.d("Vehicle data ready.  Recalculating service notifications");
 
-                            recalculateServiceNotifications();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            Timber.e("Failed to get maintenance schedule: %s", databaseError.getMessage());
-                        }
-                    });
+                    recalculateServiceNotifications();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Timber.e("Failed to get vehicle info: %s", databaseError.getMessage());
+                    Timber.e("Failed to get vehicle details: %s", databaseError.getMessage());
                 }
             });
 

@@ -23,6 +23,11 @@ public class FirebaseDatabaseUtils {
     private static FirebaseDatabaseUtils instance;
     private static FirebaseDatabase database;
 
+    // Cache for vehicle(s) that the user selects and their associated maintenance schedule.
+    private Map<String, Vehicle> vehicleMap = new HashMap<>();
+    private Map<String, Set<MaintenanceScheduleEntry>> maintenanceScheduleMap = new HashMap<>();
+    private Map<String, VehicleDetails> vehicleDetailsMap = new HashMap<>();
+
     private FirebaseDatabaseUtils() {
     }
 
@@ -57,22 +62,31 @@ public class FirebaseDatabaseUtils {
         });
     }
 
-    public void getVehicle(String vehicleUid, final HelperListener<Vehicle> listener) {
-        DatabaseReference myRef = database.getReference("vehicles/" + vehicleUid);
+    public void getVehicle(final String vehicleUid, final HelperListener<Vehicle> listener) {
 
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Vehicle vehicle = dataSnapshot.getValue(Vehicle.class);
+        if (vehicleMap.containsKey(vehicleUid)) {
+            Timber.d("Vehicle cache hit for %s", vehicleUid);
+            listener.onDataReady(vehicleMap.get(vehicleUid));
+        } else {
+            DatabaseReference myRef = database.getReference("vehicles/" + vehicleUid);
 
-                listener.onDataReady(vehicle);
-            }
+            myRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Vehicle vehicle = dataSnapshot.getValue(Vehicle.class);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                listener.onCancelled(databaseError);
-            }
-        });
+                    // Put vehicle in cache.
+                    vehicleMap.put(vehicleUid, vehicle);
+
+                    listener.onDataReady(vehicle);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    listener.onCancelled(databaseError);
+                }
+            });
+        }
     }
 
     public void getYears(final HelperListener<Set<Integer>> listener) {
@@ -169,50 +183,95 @@ public class FirebaseDatabaseUtils {
     }
 
     public void getMaintenanceSchedule(final String maintenanceScheduleUid, final HelperListener<Set<MaintenanceScheduleEntry>> listener) {
-        final DatabaseReference myRef = database.getReference();
+        if (maintenanceScheduleMap.containsKey(maintenanceScheduleUid)) {
+            Timber.d("Maintenance schedule cache hit for %s", maintenanceScheduleUid);
+            listener.onDataReady(maintenanceScheduleMap.get(maintenanceScheduleUid));
+        } else {
+            final DatabaseReference myRef = database.getReference();
 
-        myRef.child("maintenanceSchedule/" + maintenanceScheduleUid).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                final Set<MaintenanceScheduleEntry> entries = new LinkedHashSet<>();
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    MaintenanceScheduleEntry entry = ds.getValue(MaintenanceScheduleEntry.class);
-                    entries.add(entry);
+            myRef.child("maintenanceSchedule/" + maintenanceScheduleUid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    final Set<MaintenanceScheduleEntry> entries = new LinkedHashSet<>();
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        MaintenanceScheduleEntry entry = ds.getValue(MaintenanceScheduleEntry.class);
+                        entries.add(entry);
+                    }
+
+                    final AtomicInteger atomicInteger = new AtomicInteger(0);
+
+                    // Now, we want to populate the text for the maintenance.
+                    for (final MaintenanceScheduleEntry entry : entries) {
+                        myRef.child("maintenanceItem/" + entry.getMaintenanceItemId()).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                String maintenance = (String) dataSnapshot.getChildren().iterator().next().getValue();
+                                entry.setMaintenance(maintenance);
+
+                                int valuesSet = atomicInteger.incrementAndGet();
+
+                                // See if all entries have been set.  If so we can notify the listener.
+                                if (valuesSet == entries.size()) {
+                                    // Put the maintenance schedule in the cache.
+                                    maintenanceScheduleMap.put(maintenanceScheduleUid, entries);
+
+                                    listener.onDataReady(entries);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Timber.e("Failed to get maintenance text");
+                                listener.onCancelled(databaseError);
+                            }
+                        });
+                    }
                 }
 
-                final AtomicInteger atomicInteger = new AtomicInteger(0);
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    listener.onCancelled(databaseError);
+                }
+            });
+        }
+    }
 
-                // Now, we want to populate the text for the maintenance.
-                for (final MaintenanceScheduleEntry entry : entries) {
-                    myRef.child("maintenanceItem/" + entry.getMaintenanceItemId()).addValueEventListener(new ValueEventListener() {
+    public void getVehicleDetails(final String vehicleUid, final HelperListener<VehicleDetails> listener) {
+        if (vehicleDetailsMap.containsKey(vehicleUid)) {
+            Timber.d("Vehicle details cache hit for %s", vehicleUid);
+            listener.onDataReady(vehicleDetailsMap.get(vehicleUid));
+        } else {
+            getVehicle(vehicleUid, new HelperListener<Vehicle>() {
+                @Override
+                public void onDataReady(final Vehicle vehicle) {
+                    getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new HelperListener<Set<MaintenanceScheduleEntry>>() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            String maintenance = (String) dataSnapshot.getChildren().iterator().next().getValue();
-                            entry.setMaintenance(maintenance);
+                        public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceSchedule) {
+                            // Create vehicle details.
+                            VehicleDetails vehicleDetails = new VehicleDetails(vehicleUid, vehicle, maintenanceSchedule);
 
-                            int valuesSet = atomicInteger.incrementAndGet();
+                            // Add to cache.
+                            vehicleDetailsMap.put(vehicleUid, vehicleDetails);
 
-                            // See if all entries have been set.  If so we can notify the listener.
-                            if (valuesSet == entries.size()) {
-                                listener.onDataReady(entries);
-                            }
+                            // Notify listener
+                            listener.onDataReady(vehicleDetails);
                         }
 
                         @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Timber.e("Failed to get maintenance text");
+                        public void onCancelled(DatabaseError databaseError) {
                             listener.onCancelled(databaseError);
                         }
                     });
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                listener.onCancelled(databaseError);
-            }
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    listener.onCancelled(databaseError);
+                }
+            });
+        }
     }
+
 
     public interface HelperListener<T> {
         void onDataReady(T data);
