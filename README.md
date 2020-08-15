@@ -46,3 +46,10 @@ See the diagram included above for more info.
 
 [x] No unecessary calls are made to the data store.  I am using LiveData to monitor changes to the SQLite tables.
 
+## Fixes made to address V1.0 code review
+
+* All strings are defined in strings.xml.
+* Integrated second Google Play service - AdMob
+* App includes signing configuration
+* App builds using the installRelease Gradle task
+* Implemented a WorkManager job to periodically fetch the MaintenanceSchedule data from Firebase
