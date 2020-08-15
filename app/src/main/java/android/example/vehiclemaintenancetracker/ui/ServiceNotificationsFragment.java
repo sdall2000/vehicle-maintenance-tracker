@@ -1,12 +1,16 @@
 package android.example.vehiclemaintenancetracker.ui;
 
 import android.app.ActivityOptions;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
+import android.example.vehiclemaintenancetracker.data.RefreshCacheWorker;
 import android.example.vehiclemaintenancetracker.data.VehicleDetails;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
@@ -87,8 +91,9 @@ public class ServiceNotificationsFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = FragmentServiceNotificationsBinding.inflate(inflater, container, false);
 
-        setupRecyclerView();
+        setupRecyclerView(getContext());
         setupObservers();
+
 
         return binding.getRoot();
     }
@@ -110,8 +115,32 @@ public class ServiceNotificationsFragment extends Fragment {
         });
     }
 
-    private void setupRecyclerView() {
-        vehicleInfo = AppDatabase.getVehicleInfo(getActivity());
+    @Override
+    public void onStart() {
+        super.onStart();
+//        registerDataChangedListener();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerDataChangedListener();
+    }
+
+    private void registerDataChangedListener() {
+        IntentFilter intentFilter = new IntentFilter(RefreshCacheWorker.REFRESH_DATA_ACTION);
+
+        getContext().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Timber.d("Got refresh data event");
+                setupRecyclerView(context);
+            }
+        }, intentFilter);
+    }
+
+    private void setupRecyclerView(Context context) {
+        vehicleInfo = AppDatabase.getVehicleInfo(context);
 
         if (vehicleInfo != null) {
             FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {

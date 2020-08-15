@@ -26,7 +26,6 @@ public class FirebaseDatabaseUtils {
     // Cache for vehicle(s) that the user selects and their associated maintenance schedule.
     private Map<String, Vehicle> vehicleMap = new HashMap<>();
     private Map<String, Set<MaintenanceScheduleEntry>> maintenanceScheduleMap = new HashMap<>();
-    private Map<String, VehicleDetails> vehicleDetailsMap = new HashMap<>();
 
     private FirebaseDatabaseUtils() {
     }
@@ -183,7 +182,12 @@ public class FirebaseDatabaseUtils {
     }
 
     public void getMaintenanceSchedule(final String maintenanceScheduleUid, final HelperListener<Set<MaintenanceScheduleEntry>> listener) {
-        if (maintenanceScheduleMap.containsKey(maintenanceScheduleUid)) {
+        // Allow the cache to be used.
+        getMaintenanceSchedule(maintenanceScheduleUid, listener, true);
+    }
+
+    public void getMaintenanceSchedule(final String maintenanceScheduleUid, final HelperListener<Set<MaintenanceScheduleEntry>> listener, boolean useCache) {
+        if (useCache && maintenanceScheduleMap.containsKey(maintenanceScheduleUid)) {
             Timber.d("Maintenance schedule cache hit for %s", maintenanceScheduleUid);
             listener.onDataReady(maintenanceScheduleMap.get(maintenanceScheduleUid));
         } else {
@@ -236,11 +240,26 @@ public class FirebaseDatabaseUtils {
         }
     }
 
+    /**
+     * Get the Vehicle and MaintenanceScheduleEntry list for a vehicle
+     *
+     * @param vehicleUid The vehicle uid to retrieve the data for
+     * @param listener The receiver of the data
+     */
     public void getVehicleDetails(final String vehicleUid, final HelperListener<VehicleDetails> listener) {
-        if (vehicleDetailsMap.containsKey(vehicleUid)) {
-            Timber.d("Vehicle details cache hit for %s", vehicleUid);
-            listener.onDataReady(vehicleDetailsMap.get(vehicleUid));
-        } else {
+        boolean dataResolved = false;
+
+        Vehicle vehicle = vehicleMap.get(vehicleUid);
+
+        if (vehicle != null) {
+            if (maintenanceScheduleMap.containsKey(vehicle.getMaintenanceScheduleUid())) {
+                VehicleDetails vehicleDetails = new VehicleDetails(vehicleUid, vehicle, maintenanceScheduleMap.get(vehicle.getMaintenanceScheduleUid()));
+                dataResolved = true;
+                listener.onDataReady(vehicleDetails);
+            }
+        }
+
+        if (!dataResolved) {
             getVehicle(vehicleUid, new HelperListener<Vehicle>() {
                 @Override
                 public void onDataReady(final Vehicle vehicle) {
@@ -249,9 +268,6 @@ public class FirebaseDatabaseUtils {
                         public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceSchedule) {
                             // Create vehicle details.
                             VehicleDetails vehicleDetails = new VehicleDetails(vehicleUid, vehicle, maintenanceSchedule);
-
-                            // Add to cache.
-                            vehicleDetailsMap.put(vehicleUid, vehicleDetails);
 
                             // Notify listener
                             listener.onDataReady(vehicleDetails);
@@ -271,7 +287,6 @@ public class FirebaseDatabaseUtils {
             });
         }
     }
-
 
     public interface HelperListener<T> {
         void onDataReady(T data);
