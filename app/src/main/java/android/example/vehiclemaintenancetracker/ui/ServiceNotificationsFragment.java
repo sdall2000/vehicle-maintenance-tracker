@@ -1,13 +1,17 @@
 package android.example.vehiclemaintenancetracker.ui;
 
 import android.app.ActivityOptions;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
-import android.example.vehiclemaintenancetracker.data.Vehicle;
+import android.example.vehiclemaintenancetracker.data.RefreshCacheWorker;
+import android.example.vehiclemaintenancetracker.data.VehicleDetails;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
@@ -87,11 +91,9 @@ public class ServiceNotificationsFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = FragmentServiceNotificationsBinding.inflate(inflater, container, false);
 
-//        View view = inflater.inflate(R.layout.fragment_service_notifications, container, false);
-
-//        View recyclerView = view.findViewById(R.id.recyclerView);
-        setupRecyclerView();
+        setupRecyclerView(getContext());
         setupObservers();
+
 
         return binding.getRoot();
     }
@@ -113,30 +115,47 @@ public class ServiceNotificationsFragment extends Fragment {
         });
     }
 
-    private void setupRecyclerView() {
-        vehicleInfo = AppDatabase.getVehicleInfo(getActivity());
+    @Override
+    public void onStart() {
+        super.onStart();
+//        registerDataChangedListener();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerDataChangedListener();
+    }
+
+    private void registerDataChangedListener() {
+        IntentFilter intentFilter = new IntentFilter(RefreshCacheWorker.REFRESH_DATA_ACTION);
+
+        getContext().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Timber.d("Got refresh data event");
+                setupRecyclerView(context);
+            }
+        }, intentFilter);
+    }
+
+    private void setupRecyclerView(Context context) {
+        vehicleInfo = AppDatabase.getVehicleInfo(context);
 
         if (vehicleInfo != null) {
-            FirebaseDatabaseUtils.getInstance().getVehicle(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
+            FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {
                 @Override
-                public void onDataReady(final Vehicle vehicle) {
-                    FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
-                        @Override
-                        public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceScheduleEntries) {
-                            ServiceNotificationsFragment.this.maintenanceScheduleEntries = maintenanceScheduleEntries;
-                            recalculateServiceNotifications();
-                        }
+                public void onDataReady(final VehicleDetails vehicleDetails) {
+                    ServiceNotificationsFragment.this.maintenanceScheduleEntries = vehicleDetails.getMaintenanceSchedule();
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                    Timber.d("Vehicle data ready.  Recalculating service notifications");
 
-                        }
-                    });
+                    recalculateServiceNotifications();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    Timber.e("Failed to get vehicle details: %s", databaseError.getMessage());
                 }
             });
 
@@ -154,6 +173,8 @@ public class ServiceNotificationsFragment extends Fragment {
             public void onChanged(List<MileageEntry> mileageEntries) {
                 ServiceNotificationsFragment.this.mileageEntries = mileageEntries;
 
+                Timber.d("Mileage observer fired in ServiceNotificationsFragment");
+
                 recalculateServiceNotifications();
             }
         });
@@ -165,6 +186,8 @@ public class ServiceNotificationsFragment extends Fragment {
             @Override
             public void onChanged(List<MaintenanceEntryJoined> maintenanceEntries) {
                 ServiceNotificationsFragment.this.maintenanceEntries = maintenanceEntries;
+
+                Timber.d("Maintenance observer fired in ServiceNotificationsFragment");
 
                 recalculateServiceNotifications();
             }
@@ -197,10 +220,17 @@ public class ServiceNotificationsFragment extends Fragment {
                     vehicleInfo.getStartingMileage(),
                     vehicleInfo.getStartingDateEpochMs());
 
+            Timber.d("There are %d service notifications", serviceNotifications.size());
+
             // If there are no service notifications, we want to show the text view indicating maintenance is up to date.
             binding.textViewMaintenanceUpToDate.setVisibility(serviceNotifications.size() == 0 ? View.VISIBLE : View.INVISIBLE);
 
             binding.recyclerView.setAdapter(new NotificationsRecylerViewAdapter(ServiceNotificationsFragment.this, serviceNotifications));
+        } else {
+            Timber.d("A field is null %s %s %s",
+                    maintenanceEntries == null ? "maintenanceEntries" : "",
+                    maintenanceScheduleEntries == null ? "maintenanceScheduleEntries" : "",
+                    vehicleInfo == null ? "vehicleInfo" : "");
         }
     }
 

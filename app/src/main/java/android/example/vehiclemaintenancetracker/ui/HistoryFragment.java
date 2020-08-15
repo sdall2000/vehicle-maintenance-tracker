@@ -6,6 +6,7 @@ import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
+import android.example.vehiclemaintenancetracker.data.VehicleDetails;
 import android.example.vehiclemaintenancetracker.databinding.FragmentHistoryBinding;
 import android.example.vehiclemaintenancetracker.databinding.HistoryListContentBinding;
 import android.example.vehiclemaintenancetracker.model.History;
@@ -113,30 +114,19 @@ public class HistoryFragment extends Fragment {
         VehicleInfo vehicleInfo = AppDatabase.getVehicleInfo(getActivity());
 
         if (vehicleInfo != null) {
-            FirebaseDatabaseUtils.getInstance().getVehicle(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
+            FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {
                 @Override
-                public void onDataReady(final Vehicle vehicle) {
-                    FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
-                        @Override
-                        public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceScheduleEntries) {
-                            HistoryFragment.this.maintenanceScheduleEntries = maintenanceScheduleEntries;
+                public void onDataReady(final VehicleDetails vehicleDetails) {
+                    HistoryFragment.this.maintenanceScheduleEntries = vehicleDetails.getMaintenanceSchedule();
 
-                            renderServiceHistory();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
+                    renderServiceHistory();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
+                    Timber.d("Error retrieving vehicle details %s", databaseError.getMessage());
                 }
             });
-
         }
     }
 

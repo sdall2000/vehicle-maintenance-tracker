@@ -3,6 +3,7 @@ package android.example.vehiclemaintenancetracker.ui;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
+import android.example.vehiclemaintenancetracker.data.RefreshCacheWorker;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMainBinding;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,10 +12,17 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.google.android.material.tabs.TabLayout;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -29,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
                 super.log(priority, "*** timber *** " + tag, message, t);
             }
         });
+
+        startWorker();
 
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -59,5 +69,23 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent, bundle);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startWorker() {
+        // Only run when we are on an unmetered connection and the battery is not low.
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresBatteryNotLow(true)
+                .build();
+
+        // Run every six hours.
+        WorkRequest workRequest = new PeriodicWorkRequest.Builder(
+                RefreshCacheWorker.class,
+                6,
+                TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(workRequest);
     }
 }

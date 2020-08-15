@@ -32,9 +32,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/date_performed_label"
-        app:layout_constraintBottom_toBottomOf="@+id/editTextDatePerformed"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewDatePerformed"
         app:layout_constraintStart_toStartOf="@+id/textView2"
-        app:layout_constraintTop_toTopOf="@+id/editTextDatePerformed" />
+        app:layout_constraintTop_toTopOf="@+id/textViewDatePerformed" />
 
     <TextView
         android:id="@+id/textView5"
@@ -43,7 +43,7 @@
         android:text="@string/mileage_label"
         app:layout_constraintBottom_toBottomOf="@+id/editTextMileage"
         app:layout_constraintStart_toStartOf="@+id/textView4"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDatePerformed" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewDatePerformed" />
 
     <TextView
         android:id="@+id/textView6"
@@ -63,15 +63,16 @@
         app:layout_constraintStart_toStartOf="@+id/textView6"
         app:layout_constraintTop_toTopOf="@+id/editTextCost" />
 
-    <EditText
-        android:id="@+id/editTextDatePerformed"
+    <TextView
+        android:id="@+id/textViewDatePerformed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="date"
+        app:layout_constraintBottom_toBottomOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/imageButton"
         app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerMaintenance" />
+        app:layout_constraintTop_toTopOf="@+id/imageButton" />
 
     <EditText
         android:id="@+id/editTextMileage"
@@ -80,8 +81,8 @@
         android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="number"
-        app:layout_constraintStart_toStartOf="@+id/editTextDatePerformed"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDatePerformed" />
+        app:layout_constraintStart_toStartOf="@+id/textViewDatePerformed"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDatePerformed" />
 
     <EditText
         android:id="@+id/editTextTextProvider"
@@ -112,5 +113,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextCost" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="@+id/spinnerMaintenance"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerMaintenance"
+        app:srcCompat="@drawable/calendar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
