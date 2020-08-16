@@ -4,7 +4,7 @@ apply plugin: 'com.google.gms.google-services'
 android {
     signingConfigs {
         config {
-            storeFile file('C:\\Users\\sdall\\Documents\\Projects\\Udacity\\VehicleMaintenanceTracker\\keystore.jks')
+            storeFile file('../keystore.jks')
             storePassword 'udacity'
             keyAlias 'vmt'
             keyPassword 'udacity'
