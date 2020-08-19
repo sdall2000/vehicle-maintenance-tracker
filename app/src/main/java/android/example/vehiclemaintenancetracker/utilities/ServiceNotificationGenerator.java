@@ -5,11 +5,10 @@ import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
-import android.example.vehiclemaintenancetracker.data.VehicleDetails;
+import android.example.vehiclemaintenancetracker.data.VehicleStartingMileage;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.Status;
-import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 
 import com.google.firebase.database.DatabaseError;
 
@@ -89,18 +88,21 @@ public class ServiceNotificationGenerator {
      * @param serviceNotificationListener The listener to receive the service notifications
      */
     public static void generateServiceNotifications(final Context context, final ServiceNotificationsListener serviceNotificationListener) {
-        final VehicleInfo vehicleInfo = AppDatabase.getVehicleInfo(context);
+        AppDatabase appDatabase = AppDatabase.getInstance(context);
 
-        if (vehicleInfo != null) {
+        List<VehicleStartingMileage> vehicleList = appDatabase.getVehicleDao().getVehicleStartingMileage();
+
+        if (vehicleList.size() > 0) {
+            final VehicleStartingMileage vehicle = vehicleList.get(0);
             // Load mileage entries, so we can get the most recent recorded mileage.
-            final List<MileageEntry> mileageEntries = AppDatabase.getInstance(context).getMileageEntryDao().getAll();
+            final List<MileageEntry> mileageEntries = appDatabase.getMileageEntryDao().getAll();
 
             // Load the maintenance performed.
-            final List<MaintenanceEntryJoined> maintenanceEntries = AppDatabase.getInstance(context).getMaintenanceDao().getAllJoined();
+            final List<MaintenanceEntryJoined> maintenanceEntries = appDatabase.getMaintenanceDao().getAllJoined();
 
-            FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {
+            FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
                 @Override
-                public void onDataReady(VehicleDetails vehicleDetails) {
+                public void onDataReady(Set<MaintenanceScheduleEntry> data) {
                     // Now we should be able to calculate the notifications.
                     MileageEntry mostRecentMileage = null;
 
@@ -108,20 +110,21 @@ public class ServiceNotificationGenerator {
                         mostRecentMileage = mileageEntries.get(0);
                     }
 
-                    int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicleInfo.getStartingMileage();
+                    int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicle.getStartingMileage();
                     long currentDate = System.currentTimeMillis();
 
                     List<ServiceNotification> serviceNotifications = ServiceNotificationGenerator.generateServiceNotifications(
                             currentMileage,
                             currentDate,
-                            vehicleDetails.getMaintenanceSchedule(),
+                            data,
                             maintenanceEntries,
                             AppDatabase.getMileageWarningThreshold(context),
                             AppDatabase.getDayWarningThreshold(context),
-                            vehicleInfo.getStartingMileage(),
-                            vehicleInfo.getStartingDateEpochMs());
+                            vehicle.getStartingMileage(),
+                            vehicle.getStartingDate().getTime());
 
-                    serviceNotificationListener.onNotificationsReady(serviceNotifications);                }
+                    serviceNotificationListener.onNotificationsReady(serviceNotifications);
+                }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {

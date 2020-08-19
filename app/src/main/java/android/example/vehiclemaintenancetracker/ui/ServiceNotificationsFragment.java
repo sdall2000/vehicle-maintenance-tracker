@@ -1,23 +1,18 @@
 package android.example.vehiclemaintenancetracker.ui;
 
 import android.app.ActivityOptions;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
-import android.example.vehiclemaintenancetracker.data.RefreshCacheWorker;
-import android.example.vehiclemaintenancetracker.data.VehicleDetails;
+import android.example.vehiclemaintenancetracker.data.VehicleStartingMileage;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
 import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.Status;
-import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
@@ -52,11 +47,12 @@ public class ServiceNotificationsFragment extends Fragment {
 
     private List<MileageEntry> mileageEntries;
     private List<MaintenanceEntryJoined> maintenanceEntries;
-    private VehicleInfo vehicleInfo;
     private Set<MaintenanceScheduleEntry> maintenanceScheduleEntries;
 
     FragmentServiceNotificationsBinding binding;
     private String maintenanceScheduleUid;
+
+    private VehicleStartingMileage vehicle;
 
     public ServiceNotificationsFragment() {
         // Required empty public constructor
@@ -91,9 +87,9 @@ public class ServiceNotificationsFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = FragmentServiceNotificationsBinding.inflate(inflater, container, false);
 
-        setupRecyclerView(getContext());
-        setupObservers();
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        setupObservers();
 
         return binding.getRoot();
     }
@@ -115,58 +111,44 @@ public class ServiceNotificationsFragment extends Fragment {
         });
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-//        registerDataChangedListener();
-    }
+    private void setupObservers() {
+        final AppDatabase appDatabase = AppDatabase.getInstance(getContext());
+        // Observe changes to the vehicle.
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        registerDataChangedListener();
-    }
-
-    private void registerDataChangedListener() {
-        IntentFilter intentFilter = new IntentFilter(RefreshCacheWorker.REFRESH_DATA_ACTION);
-
-        getContext().registerReceiver(new BroadcastReceiver() {
+        LiveData<List<VehicleStartingMileage>> vehicles = appDatabase.getVehicleDao().getVehicleStartingMileageLive();
+        vehicles.observe(getViewLifecycleOwner(), new Observer<List<VehicleStartingMileage>>() {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                Timber.d("Got refresh data event");
-                setupRecyclerView(context);
-            }
-        }, intentFilter);
-    }
+            public void onChanged(List<VehicleStartingMileage> vehicles) {
+                // TODO Just track one vehicle for now.
+                if (vehicles.size() > 0) {
+                    vehicle = vehicles.get(0);
 
-    private void setupRecyclerView(Context context) {
-        vehicleInfo = AppDatabase.getVehicleInfo(context);
+                    FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
+                        @Override
+                        public void onDataReady(Set<MaintenanceScheduleEntry> data) {
+                            maintenanceScheduleEntries = data;
 
-        if (vehicleInfo != null) {
-            FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {
-                @Override
-                public void onDataReady(final VehicleDetails vehicleDetails) {
-                    ServiceNotificationsFragment.this.maintenanceScheduleEntries = vehicleDetails.getMaintenanceSchedule();
+                            recalculateServiceNotifications();
+                        }
 
-                    Timber.d("Vehicle data ready.  Recalculating service notifications");
-
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Timber.e("Error getting maintenance schedule %s", databaseError);
+                        }
+                    });
+                } else {
+                    // It's possible all vehicles were deleted, in which case we need to refresh
+                    // the notifications.
                     recalculateServiceNotifications();
                 }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Timber.e("Failed to get vehicle details: %s", databaseError.getMessage());
-                }
-            });
+                Timber.d("Vehicle observer fired in ServiceNotificationsFragment");
+            }
+        });
 
-            binding.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        }
-    }
-
-    private void setupObservers() {
         // Observe changes to the mileage data.  We need to listen to this separately from the joined
         // query below, because mileage entries may be made without corresponding maintenance entries.
-        LiveData<List<MileageEntry>> mileage = AppDatabase.getInstance(getContext()).getMileageEntryDao().getAllLiveData();
+        LiveData<List<MileageEntry>> mileage = appDatabase.getMileageEntryDao().getAllLiveData();
 
         mileage.observe(getViewLifecycleOwner(), new Observer<List<MileageEntry>>() {
             @Override
@@ -180,7 +162,7 @@ public class ServiceNotificationsFragment extends Fragment {
         });
 
         // Observe changes to joined maintenance/mileage.
-        LiveData<List<MaintenanceEntryJoined>> maintenance = AppDatabase.getInstance(getContext()).getMaintenanceDao().getAllJoinedLiveData();
+        LiveData<List<MaintenanceEntryJoined>> maintenance = appDatabase.getMaintenanceDao().getAllJoinedLiveData();
 
         maintenance.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntryJoined>>() {
             @Override
@@ -198,7 +180,7 @@ public class ServiceNotificationsFragment extends Fragment {
         Timber.d("Recalculate service notifications");
 
         // Mandatory fields for calculating service notifications.
-        if (maintenanceEntries != null && maintenanceScheduleEntries != null && vehicleInfo != null) {
+        if (maintenanceEntries != null && maintenanceScheduleEntries != null && vehicle != null) {
             MileageEntry mostRecentMileage = null;
 
             if (mileageEntries != null && mileageEntries.size() > 0) {
@@ -206,7 +188,7 @@ public class ServiceNotificationsFragment extends Fragment {
             }
 
             // If there are no mileage entries yet for the vehicle, use the vehicle starting mileage.
-            int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicleInfo.getStartingMileage();
+            int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicle.getStartingMileage();
             long currentDate = System.currentTimeMillis();
 
             // Get the vehicle UID, start date, and start mileage.
@@ -217,8 +199,8 @@ public class ServiceNotificationsFragment extends Fragment {
                     maintenanceEntries,
                     AppDatabase.getMileageWarningThreshold(getContext()),
                     AppDatabase.getDayWarningThreshold(getContext()),
-                    vehicleInfo.getStartingMileage(),
-                    vehicleInfo.getStartingDateEpochMs());
+                    vehicle.getStartingMileage(),
+                    vehicle.getStartingDate().getTime());
 
             Timber.d("There are %d service notifications", serviceNotifications.size());
 
@@ -230,7 +212,7 @@ public class ServiceNotificationsFragment extends Fragment {
             Timber.d("A field is null %s %s %s",
                     maintenanceEntries == null ? "maintenanceEntries" : "",
                     maintenanceScheduleEntries == null ? "maintenanceScheduleEntries" : "",
-                    vehicleInfo == null ? "vehicleInfo" : "");
+                    vehicle == null ? "vehicle" : "");
         }
     }
 
@@ -292,6 +274,5 @@ public class ServiceNotificationsFragment extends Fragment {
                 }
             }
         }
-
     }
 }

@@ -65,4 +65,6 @@
     <string name="ad_app_id">ca-app-pub-5550468670492636~7551878388</string>
     <string name="ad_unit_id">ca-app-pub-5550468670492636/2271631541</string>
     <string name="ad_unit_id_test_ads">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="vehicle_name_label">Name:</string>
+    <string name="vehicle_description_label">Description:</string>
 </resources>

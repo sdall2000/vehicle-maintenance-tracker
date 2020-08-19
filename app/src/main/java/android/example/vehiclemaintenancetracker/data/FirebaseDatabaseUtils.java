@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import timber.log.Timber;
@@ -23,8 +22,7 @@ public class FirebaseDatabaseUtils {
     private static FirebaseDatabaseUtils instance;
     private static FirebaseDatabase database;
 
-    // Cache for vehicle(s) that the user selects and their associated maintenance schedule.
-    private Map<String, Vehicle> vehicleMap = new HashMap<>();
+    // Cache for the maintenance schedule.
     private Map<String, Set<MaintenanceScheduleEntry>> maintenanceScheduleMap = new HashMap<>();
 
     private FirebaseDatabaseUtils() {
@@ -56,126 +54,6 @@ public class FirebaseDatabaseUtils {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                listener.onCancelled(databaseError);
-            }
-        });
-    }
-
-    public void getVehicle(final String vehicleUid, final HelperListener<Vehicle> listener) {
-
-        if (vehicleMap.containsKey(vehicleUid)) {
-            Timber.d("Vehicle cache hit for %s", vehicleUid);
-            listener.onDataReady(vehicleMap.get(vehicleUid));
-        } else {
-            DatabaseReference myRef = database.getReference("vehicles/" + vehicleUid);
-
-            myRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    Vehicle vehicle = dataSnapshot.getValue(Vehicle.class);
-
-                    // Put vehicle in cache.
-                    vehicleMap.put(vehicleUid, vehicle);
-
-                    listener.onDataReady(vehicle);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    listener.onCancelled(databaseError);
-                }
-            });
-        }
-    }
-
-    public void getYears(final HelperListener<Set<Integer>> listener) {
-
-        // Leverage the existing getVehicles API.
-        getVehicles(new HelperListener<Map<String, Vehicle>>() {
-            @Override
-            public void onDataReady(Map<String, Vehicle> data) {
-                Set<Integer> years = new TreeSet<>();
-
-                for (Vehicle vehicle : data.values()) {
-                    years.add(vehicle.getYear());
-                }
-
-                listener.onDataReady(years);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                listener.onCancelled(databaseError);
-            }
-        });
-    }
-
-    public void getMakesForYear(final int year, final HelperListener<Set<String>> listener) {
-        // Leverage the existing getVehicles API.
-        getVehicles(new HelperListener<Map<String, Vehicle>>() {
-            @Override
-            public void onDataReady(Map<String, Vehicle> data) {
-                Set<String> makes = new TreeSet<>();
-
-                for (Vehicle vehicle : data.values()) {
-                    if (vehicle.getYear() == year) {
-                        makes.add(vehicle.getMake());
-                    }
-                }
-
-                listener.onDataReady(makes);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                listener.onCancelled(databaseError);
-            }
-        });
-    }
-
-    public void getModelsForMakeYear(final int year, final String make, final HelperListener<Set<String>> listener) {
-        // Leverage the existing getVehicles API.
-        getVehicles(new HelperListener<Map<String, Vehicle>>() {
-            @Override
-            public void onDataReady(Map<String, Vehicle> data) {
-                Set<String> models = new TreeSet<>();
-
-                for (Vehicle vehicle : data.values()) {
-                    if (vehicle.getYear() == year && vehicle.getMake().equals(make)) {
-                        models.add(vehicle.getModel());
-                    }
-                }
-
-                listener.onDataReady(models);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                listener.onCancelled(databaseError);
-            }
-        });
-    }
-
-    public void getVehicleUid(final int year, final String make, final String model, final HelperListener<String> listener) {
-        getVehicles(new HelperListener<Map<String, Vehicle>>() {
-            @Override
-            public void onDataReady(Map<String, Vehicle> data) {
-                for (Map.Entry<String, Vehicle> v : data.entrySet()) {
-                    Vehicle vehicle = v.getValue();
-                    if (year == vehicle.getYear() && make.equals(vehicle.getMake()) && model.equals(vehicle.getModel())) {
-                        listener.onDataReady(v.getKey());
-
-                        // We can exit this method since we found the matching vehicle and have notified the listener.
-                        return;
-                    }
-                }
-
-                // No data found.  Return null.
-                listener.onDataReady(null);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
                 listener.onCancelled(databaseError);
             }
         });
@@ -234,54 +112,6 @@ public class FirebaseDatabaseUtils {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    listener.onCancelled(databaseError);
-                }
-            });
-        }
-    }
-
-    /**
-     * Get the Vehicle and MaintenanceScheduleEntry list for a vehicle
-     *
-     * @param vehicleUid The vehicle uid to retrieve the data for
-     * @param listener The receiver of the data
-     */
-    public void getVehicleDetails(final String vehicleUid, final HelperListener<VehicleDetails> listener) {
-        boolean dataResolved = false;
-
-        Vehicle vehicle = vehicleMap.get(vehicleUid);
-
-        if (vehicle != null) {
-            if (maintenanceScheduleMap.containsKey(vehicle.getMaintenanceScheduleUid())) {
-                VehicleDetails vehicleDetails = new VehicleDetails(vehicleUid, vehicle, maintenanceScheduleMap.get(vehicle.getMaintenanceScheduleUid()));
-                dataResolved = true;
-                listener.onDataReady(vehicleDetails);
-            }
-        }
-
-        if (!dataResolved) {
-            getVehicle(vehicleUid, new HelperListener<Vehicle>() {
-                @Override
-                public void onDataReady(final Vehicle vehicle) {
-                    getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new HelperListener<Set<MaintenanceScheduleEntry>>() {
-                        @Override
-                        public void onDataReady(Set<MaintenanceScheduleEntry> maintenanceSchedule) {
-                            // Create vehicle details.
-                            VehicleDetails vehicleDetails = new VehicleDetails(vehicleUid, vehicle, maintenanceSchedule);
-
-                            // Notify listener
-                            listener.onDataReady(vehicleDetails);
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            listener.onCancelled(databaseError);
-                        }
-                    });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
                     listener.onCancelled(databaseError);
                 }
             });

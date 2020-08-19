@@ -5,43 +5,29 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
-import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
+import android.example.vehiclemaintenancetracker.data.VehicleStartingMileage;
 import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChooserBinding;
-import android.example.vehiclemaintenancetracker.model.VehicleInfo;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.example.vehiclemaintenancetracker.utilities.DatePickerHelper;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.database.DatabaseError;
-
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-
-import timber.log.Timber;
 
 public class VehicleChooserActivity extends AppCompatActivity {
 
     private DateFormat dateFormat;
 
     private ActivityVehicleChooserBinding binding;
-
-    // These are used as the selected item in the spinner, if they are set.
-    private Integer vehicleYear;
-    private String vehicleMake;
-    private String vehicleModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,129 +37,47 @@ public class VehicleChooserActivity extends AppCompatActivity {
 
         dateFormat = android.text.format.DateFormat.getDateFormat(this);
 
-        binding.spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Timber.d("Year item clicked: " + position + ", " + id);
-                vehicleYear = (int) parent.getAdapter().getItem(position);
-                populateMakeSpinner();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                Timber.d("No year selected");
-            }
-        });
-
-        binding.spinnerMake.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Timber.d("Year item clicked: " + position + ", " + id);
-                vehicleMake = (String) binding.spinnerMake.getAdapter().getItem(position);
-                populateModelSpinner();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                Timber.d("No make selected");
-            }
-        });
-
-        binding.spinnerModel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                vehicleModel = (String) binding.spinnerModel.getAdapter().getItem(position);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                Timber.d("No model selected");
-            }
-        });
-
         binding.buttonSelectVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (inputValid()) {
-                    String dateString = binding.textFieldDate.getText().toString();
-                    String mileageString = binding.editTextMileage.getText().toString();
-
-                    try {
-                        final Date date = dateFormat.parse(dateString);
-                        final int mileage = Integer.parseInt(mileageString);
-
-                        Timber.d("onClick");
-                        FirebaseDatabaseUtils.getInstance().getVehicleUid(vehicleYear, vehicleMake, vehicleModel, new FirebaseDatabaseUtils.HelperListener<String>() {
-                            @Override
-                            public void onDataReady(String data) {
-                                Timber.d("Got vehicle id %s", data);
-
-                                AppDatabase.setVehicleUid(VehicleChooserActivity.this, data);
-                                AppDatabase.setStartingMileage(VehicleChooserActivity.this, mileage);
-                                AppDatabase.setStartingDateEpochMs(VehicleChooserActivity.this, date.getTime());
-
-                                // Launch worker thread for db operations.
-                                AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        // Clear out any existing data.
-                                        AppDatabase.getInstance(VehicleChooserActivity.this).deleteData();
-
-                                        // Create the first mileage entry based on the starting mileage/date entered for the vehicle.
-                                        MileageEntry mileageEntry = new MileageEntry(mileage, date);
-                                        AppDatabase.getInstance(VehicleChooserActivity.this).getMileageEntryDao().insert(mileageEntry);
-
-                                        // Update the app widgets.
-                                        updateAppWidgets();
-
-                                        // Complete this activity.
-                                        Intent intent = new Intent();
-                                        setResult(RESULT_OK, intent);
-                                        finish();
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                                Timber.e("Failed to get vehicle uid: %s", databaseError.getMessage());
-                                setResult(RESULT_CANCELED);
-                                finish();
-                            }
-                        });
-                    } catch (ParseException e) {
-                        // Should never happen because we always validate the fields before using them.
-                        Toast.makeText(VehicleChooserActivity.this, R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
-                    }
+                    saveVehicle();
                 }
             }
         });
 
-        VehicleInfo vehicleInfo = AppDatabase.getVehicleInfo(this);
+        // Load vehicle data in the background thread since it accesses the db.
+        AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                loadVehicle();
+            }
+        });
+    }
 
-        Date startingDate;
-        int startingMileage;
+    private void loadVehicle() {
+        // Defaults if vehicle has not been defined.
+        Date startingDate = new Date();
+        int startingMileage = 0;
 
-        if (vehicleInfo != null) {
-            // If the vehicle uid has been set, then the starting mileage/date will be as well.
-            startingMileage = vehicleInfo.getStartingMileage();
+        List<VehicleStartingMileage> vehicles = AppDatabase.getInstance(this).getVehicleDao().getVehicleStartingMileage();
 
-            // If the starting date is already set, use that date instead.
-            long epochMs = vehicleInfo.getStartingDateEpochMs();
-            startingDate = new Date(epochMs);
+        VehicleStartingMileage vehicle;
 
-            // Populate spinners from selected vehicle.
-            populateSpinnersWithVehicle(vehicleInfo.getVehicleUid());
-        } else {
-            // No vehicle selected yet.
-            // Set default starting values.
-            startingMileage = 0;
-            startingDate = new Date();
+        if (vehicles.size() >= 1) {
+            vehicle = vehicles.get(0);
 
-            // Populate spinners, starting with the year.
-            populateYearSpinner();
+            if (vehicle != null) {
+                // If the vehicle uid has been set, then the starting mileage/date will be as well.
+                startingMileage = vehicle.getStartingMileage();
+
+                // If the starting date is already set, use that date instead.
+                startingDate = vehicle.getStartingDate();
+
+                binding.editTextName.setText(vehicle.getName());
+                binding.editTextDescription.setText(vehicle.getDescription());
+            }
         }
-
         binding.editTextMileage.setText(String.format("%d", startingMileage));
 
         // Use the DatePickerHelper to configure date picker functionality and set initial value.
@@ -185,6 +89,51 @@ public class VehicleChooserActivity extends AppCompatActivity {
                 startingDate);
     }
 
+    private void saveVehicle() {
+        String dateString = binding.textFieldDate.getText().toString();
+        String mileageString = binding.editTextMileage.getText().toString();
+        final AppDatabase appDatabase = AppDatabase.getInstance(this);
+
+        try {
+            final Date date = dateFormat.parse(dateString);
+            final int mileage = Integer.parseInt(mileageString);
+
+            // Launch worker thread for db operations.
+            AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    // Clear out any existing data.
+                    appDatabase.deleteData();
+
+                    // Create the first mileage entry based on the starting mileage/date entered for the vehicle.
+                    MileageEntry mileageEntry = new MileageEntry(mileage, date);
+                    long mileageUid = appDatabase.getMileageEntryDao().insert(mileageEntry);
+
+                    String name = binding.editTextName.getText().toString();
+                    String description = binding.editTextDescription.getText().toString();
+
+                    // TODO hardcoded until we let the user define/pick a maintenance schedule
+                    String maintenanceScheduleUid = "1";
+
+                    Vehicle vehicle = new Vehicle(name, description, maintenanceScheduleUid, (int) mileageUid);
+                    appDatabase.getVehicleDao().insert(vehicle);
+
+                    // Update the app widgets.
+                    updateAppWidgets();
+
+                    // Complete this activity.
+                    Intent intent = new Intent();
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            });
+
+        } catch (ParseException e) {
+            // Should never happen because we always validate the fields before using them.
+            Toast.makeText(VehicleChooserActivity.this, R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void updateAppWidgets() {
         Intent intent = new Intent(this, VehicleMaintenanceTrackerAppWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
@@ -193,123 +142,21 @@ public class VehicleChooserActivity extends AppCompatActivity {
         sendBroadcast(intent);
     }
 
-    private void populateSpinnersWithVehicle(String selectedVehicleUid) {
-        FirebaseDatabaseUtils.getInstance().getVehicle(selectedVehicleUid, new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
-            @Override
-            public void onDataReady(Vehicle data) {
-                vehicleYear = data.getYear();
-                vehicleMake = data.getMake();
-                vehicleModel = data.getModel();
-
-                // Kick off populating spinners by starting with year.
-                populateYearSpinner();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // TODO log an error.
-                populateYearSpinner();
-            }
-        });
-    }
-
-    private void populateYearSpinner() {
-        FirebaseDatabaseUtils.getInstance().getYears(new FirebaseDatabaseUtils.HelperListener<Set<Integer>>() {
-            @Override
-            public void onDataReady(Set<Integer> data) {
-                List<Integer> list = new ArrayList<>(data);
-                ArrayAdapter<Integer> adapter = new ArrayAdapter<>(
-                        VehicleChooserActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        list);
-
-                adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-
-                binding.spinnerYear.setAdapter(adapter);
-
-                if (vehicleYear != null) {
-                    // The year is set.  Use that position.
-                    binding.spinnerYear.setSelection(adapter.getPosition(vehicleYear));
-                } else {
-                    // The year is not set.  Use the last item in the set.
-                    binding.spinnerYear.setSelection(data.size() - 1);
-                    vehicleYear = list.get(list.size() - 1);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void populateMakeSpinner() {
-        FirebaseDatabaseUtils.getInstance().getMakesForYear(vehicleYear, new FirebaseDatabaseUtils.HelperListener<Set<String>>() {
-            @Override
-            public void onDataReady(Set<String> data) {
-                List<String> list = new ArrayList<>(data);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        VehicleChooserActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        list);
-
-                adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-
-                binding.spinnerMake.setAdapter(adapter);
-
-                // If there is a vehicle make defined, then set that, otherwise the first make will be selected.
-                if (vehicleMake != null) {
-                    binding.spinnerMake.setSelection(adapter.getPosition(vehicleMake));
-                } else {
-                    vehicleMake = list.get(0);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void populateModelSpinner() {
-        FirebaseDatabaseUtils.getInstance().getModelsForMakeYear(vehicleYear, vehicleMake, new FirebaseDatabaseUtils.HelperListener<Set<String>>() {
-            @Override
-            public void onDataReady(Set<String> data) {
-                List<String> list = new ArrayList<>(data);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        VehicleChooserActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        list);
-
-                adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-
-                binding.spinnerModel.setAdapter(adapter);
-
-                // If there is a vehicle model defined, then set that, otherwise the first model will be selected.
-                if (vehicleModel != null) {
-                    binding.spinnerModel.setSelection(adapter.getPosition(vehicleModel));
-                } else {
-                    vehicleModel = list.get(0);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
     private boolean inputValid() {
         boolean inputValid = true;
 
+        String name = binding.editTextName.getText().toString();
         String dateString = binding.textFieldDate.getText().toString();
         String mileageString = binding.editTextMileage.getText().toString();
 
+        binding.editTextName.setError(null);
         binding.textFieldDate.setError(null);
         binding.editTextMileage.setError(null);
+
+        if (name.isEmpty()) {
+            binding.editTextName.setError(getString(R.string.validation_required_field));
+            inputValid = false;
+        }
 
         if (dateString.isEmpty()) {
             binding.textFieldDate.setError(getString(R.string.validation_required_field));

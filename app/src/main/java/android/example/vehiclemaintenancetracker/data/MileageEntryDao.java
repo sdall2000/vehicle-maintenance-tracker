@@ -19,6 +19,9 @@ public interface MileageEntryDao {
     @Query("SELECT * FROM mileageEntry ORDER BY date DESC, uid DESC LIMIT 1")
     MileageEntry getMostRecentMileage();
 
+    @Query("SELECT * FROM mileageEntry WHERE uid = :uid")
+    MileageEntry getMileageEntry(int uid);
+
     @Insert
     long insert(MileageEntry mileageEntry);
 
