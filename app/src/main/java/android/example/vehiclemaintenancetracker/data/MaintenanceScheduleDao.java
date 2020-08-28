@@ -6,10 +6,10 @@ import androidx.room.Query;
 import java.util.List;
 
 @Dao
-public interface MaintenanceDao {
-    @Query("SELECT * FROM maintenance")
+public interface MaintenanceScheduleDao {
+    @Query("SELECT * FROM maintenanceSchedule")
     List<Maintenance> getAll();
 
-    @Query("SELECT * FROM maintenance where uid = :uid")
+    @Query("SELECT * FROM maintenanceSchedule where uid = :uid")
     Maintenance getMaintenance(int uid);
 }

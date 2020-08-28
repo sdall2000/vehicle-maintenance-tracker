@@ -3,13 +3,13 @@ package android.example.vehiclemaintenancetracker.ui;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
-import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
+import android.example.vehiclemaintenancetracker.data.MaintenanceScheduleDetailJoined;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentHistoryBinding;
 import android.example.vehiclemaintenancetracker.databinding.HistoryListContentBinding;
 import android.example.vehiclemaintenancetracker.model.History;
-import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
+import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -23,13 +23,10 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.DatabaseError;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import timber.log.Timber;
 
@@ -37,7 +34,7 @@ public class HistoryFragment extends Fragment {
 
     FragmentHistoryBinding binding;
     private Vehicle vehicle;
-    private Set<MaintenanceScheduleEntry> maintenanceScheduleEntries;
+    private List<MaintenanceScheduleDetailJoined> maintenanceScheduleEntries;
     private List<MaintenanceEntryJoined> maintenanceEntries;
 
     public HistoryFragment() {
@@ -75,7 +72,7 @@ public class HistoryFragment extends Fragment {
             }
         });
 
-        LiveData<List<MaintenanceEntryJoined>> maintenanceEntries = AppDatabase.getInstance(getContext()).getMaintenanceDao().getAllJoinedLiveData();
+        LiveData<List<MaintenanceEntryJoined>> maintenanceEntries = AppDatabase.getInstance(getContext()).getMaintenanceEntryDao().getAllJoinedLiveData();
         maintenanceEntries.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntryJoined>>() {
             @Override
             public void onChanged(List<MaintenanceEntryJoined> maintenanceEntries) {
@@ -98,17 +95,18 @@ public class HistoryFragment extends Fragment {
 
     private void populateRecyclerView() {
         if (vehicle != null) {
-            FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
+            AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
                 @Override
-                public void onDataReady(final Set<MaintenanceScheduleEntry> data) {
-                    HistoryFragment.this.maintenanceScheduleEntries = data;
+                public void run() {
+                    maintenanceScheduleEntries = AppDatabase.getInstance(getContext()).getMaintenanceScheduleDetailDao().getMaintenanceScheduleDetailJoined(vehicle.getMaintenanceScheduleUid());
 
-                    renderServiceHistory();
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Timber.d("Error retrieving vehicle details %s", databaseError.getMessage());
+                    // Must populate in UI thread.
+                    AppExecutor.getInstance().getUiExecutor().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            renderServiceHistory();
+                        }
+                    });
                 }
             });
         }
@@ -122,12 +120,12 @@ public class HistoryFragment extends Fragment {
 
             // Create the list of history.  This includes the maintenance text.
             for (MaintenanceEntryJoined entry : maintenanceEntries) {
-                MaintenanceScheduleEntry scheduleEntry = getMaintenanceScheduleEntry(entry.getMaintenanceItemUid());
+                MaintenanceScheduleDetailJoined scheduleEntry = getMaintenanceScheduleEntry(entry.getMaintenanceItemUid());
 
                 if (scheduleEntry != null) {
                     double cost = entry.getCost() == null ? 0.0 : entry.getCost();
                     totalCost += cost;
-                    historyList.add(new History(entry.getDate(), entry.getMileage(), scheduleEntry.getMaintenance(), cost, entry.getProvider()));
+                    historyList.add(new History(entry.getDate(), entry.getMileage(), scheduleEntry.getMaintenanceName(), cost, entry.getProvider()));
                 } else {
                     Timber.e("Could not find maintenance schedule entry with UID %s", entry.getMaintenanceItemUid());
                 }
@@ -138,9 +136,9 @@ public class HistoryFragment extends Fragment {
         }
     }
 
-    private MaintenanceScheduleEntry getMaintenanceScheduleEntry(String uid) {
-        for (MaintenanceScheduleEntry entry : maintenanceScheduleEntries) {
-            if (uid.equals(entry.getMaintenanceItemId())) {
+    private MaintenanceScheduleDetailJoined getMaintenanceScheduleEntry(int uid) {
+        for (MaintenanceScheduleDetailJoined entry : maintenanceScheduleEntries) {
+            if (uid == entry.getMaintenanceUid()) {
                 return entry;
             }
         }

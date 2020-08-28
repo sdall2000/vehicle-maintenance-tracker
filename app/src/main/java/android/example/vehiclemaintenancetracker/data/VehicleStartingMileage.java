@@ -12,7 +12,7 @@ public class VehicleStartingMileage extends Vehicle {
     private int startingMileage;
     private Date startingDate;
 
-    public VehicleStartingMileage(int uid, String name, String description, String maintenanceScheduleUid, int startingMileageEntryUid, int startingMileage, Date startingDate) {
+    public VehicleStartingMileage(int uid, String name, String description, int maintenanceScheduleUid, int startingMileageEntryUid, int startingMileage, Date startingDate) {
         super(uid, name, description, maintenanceScheduleUid, startingMileageEntryUid);
 
         this.startingMileage = startingMileage;

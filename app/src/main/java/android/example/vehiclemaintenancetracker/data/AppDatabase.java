@@ -8,10 +8,11 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {MileageEntry.class, MaintenanceEntry.class, Vehicle.class}, version = 1)
+@Database(entities = {MileageEntry.class, MaintenanceEntry.class, Vehicle.class, Maintenance.class, MaintenanceSchedule.class, MaintenanceScheduleDetail.class}, version = 1)
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DB_NAME = "vehicleMaintenanceDatabase.db";
+    private static final String PREPOPULATED_DATABASE_ASSET = "database/maintenance.db";
 
     public static final String MAINTENANCE_SCHEDULE_UID_KEY = "maintenanceScheduleUid";
 
@@ -28,16 +29,22 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract MileageEntryDao getMileageEntryDao();
 
-    public abstract MaintenanceDao getMaintenanceDao();
+    public abstract MaintenanceEntryDao getMaintenanceEntryDao();
 
     public abstract VehicleDao getVehicleDao();
+
+    public abstract MaintenanceDao getMaintenanceDao();
+    public abstract MaintenanceScheduleDao getMaintenanceScheduleDao();
+    public abstract MaintenanceScheduleDetailDao getMaintenanceScheduleDetailDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
                     context,
                     AppDatabase.class,
-                    DB_NAME).build();
+                    DB_NAME)
+                    .createFromAsset(PREPOPULATED_DATABASE_ASSET)
+                    .build();
         }
 
         return instance;
@@ -84,7 +91,7 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     public void deleteData() {
-        getMaintenanceDao().deleteAll();
+        getMaintenanceEntryDao().deleteAll();
         getMileageEntryDao().deleteAll();
         getVehicleDao().deleteAll();
     }

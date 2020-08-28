@@ -161,7 +161,7 @@ public class DashboardFragment extends Fragment {
         });
     }
 
-    private void loadServiceNotificationsFragment(String maintenanceScheduleUid) {
+    private void loadServiceNotificationsFragment(int maintenanceScheduleUid) {
 
         // TODO handle case where the vehicle uid has changed.
         // Insert service notifications fragment

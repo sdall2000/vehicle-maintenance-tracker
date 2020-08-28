@@ -11,14 +11,14 @@ public class Vehicle {
 
     private final String name;
     private final String description;
-    private final String maintenanceScheduleUid;
+    private final int maintenanceScheduleUid;
     private final int startingMileageEntryUid;
 
     @Ignore
     public Vehicle(
             String name,
             String description,
-            String maintenanceScheduleUid,
+            int maintenanceScheduleUid,
             int startingMileageEntryUid) {
         this(0, name, description, maintenanceScheduleUid, startingMileageEntryUid);
     }
@@ -27,7 +27,7 @@ public class Vehicle {
             int uid,
             String name,
             String description,
-            String maintenanceScheduleUid,
+            int maintenanceScheduleUid,
             int startingMileageEntryUid) {
         this.uid = uid;
         this.name = name;
@@ -47,7 +47,7 @@ public class Vehicle {
         return description;
     }
 
-    public String getMaintenanceScheduleUid() {
+    public int getMaintenanceScheduleUid() {
         return maintenanceScheduleUid;
     }
 

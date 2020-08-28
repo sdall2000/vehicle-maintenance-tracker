@@ -8,13 +8,13 @@ import androidx.room.PrimaryKey;
 @Entity
 public class MaintenanceEntry {
     @PrimaryKey(autoGenerate = true)
-    private long uid;
+    private int uid;
 
     @ColumnInfo(name="mileageUid")
     private long mileageUid;
 
     @ColumnInfo(name="maintenanceItemUid")
-    private String maintenanceItemUid;
+    private int maintenanceItemUid;
 
     @ColumnInfo(name="provider")
     private String provider;
@@ -27,14 +27,14 @@ public class MaintenanceEntry {
     @Ignore
     private MileageEntry mileageEntry;
 
-    public MaintenanceEntry(long mileageUid, String maintenanceItemUid, String provider, Double cost) {
+    public MaintenanceEntry(long mileageUid, int maintenanceItemUid, String provider, Double cost) {
         this.mileageUid = mileageUid;
         this.maintenanceItemUid = maintenanceItemUid;
         this.provider = provider;
         this.cost = cost;
     }
 
-    public void setUid(long uid) {
+    public void setUid(int uid) {
         this.uid = uid;
     }
 
@@ -42,7 +42,7 @@ public class MaintenanceEntry {
         this.mileageUid = mileageUid;
     }
 
-    public void setMaintenanceItemUid(String maintenanceItemUid) {
+    public void setMaintenanceItemUid(int maintenanceItemUid) {
         this.maintenanceItemUid = maintenanceItemUid;
     }
 
@@ -58,7 +58,7 @@ public class MaintenanceEntry {
         this.mileageEntry = mileageEntry;
     }
 
-    public long getUid() {
+    public int getUid() {
         return uid;
     }
 
@@ -66,7 +66,7 @@ public class MaintenanceEntry {
         return mileageUid;
     }
 
-    public String getMaintenanceItemUid() {
+    public int getMaintenanceItemUid() {
         return maintenanceItemUid;
     }
 

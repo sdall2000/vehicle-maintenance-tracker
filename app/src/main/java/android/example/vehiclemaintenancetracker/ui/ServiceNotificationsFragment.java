@@ -4,15 +4,15 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
-import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
+import android.example.vehiclemaintenancetracker.data.MaintenanceScheduleDetailJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.VehicleStartingMileage;
 import android.example.vehiclemaintenancetracker.databinding.FragmentServiceNotificationsBinding;
 import android.example.vehiclemaintenancetracker.databinding.NotificationListContentBinding;
-import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.Status;
+import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.example.vehiclemaintenancetracker.utilities.ServiceNotificationGenerator;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
@@ -28,12 +28,9 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.DatabaseError;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Set;
 
 import timber.log.Timber;
 
@@ -47,10 +44,10 @@ public class ServiceNotificationsFragment extends Fragment {
 
     private List<MileageEntry> mileageEntries;
     private List<MaintenanceEntryJoined> maintenanceEntries;
-    private Set<MaintenanceScheduleEntry> maintenanceScheduleEntries;
+    private List<MaintenanceScheduleDetailJoined> maintenanceScheduleEntries;
 
     FragmentServiceNotificationsBinding binding;
-    private String maintenanceScheduleUid;
+    private int maintenanceScheduleUid;
 
     private VehicleStartingMileage vehicle;
 
@@ -65,10 +62,10 @@ public class ServiceNotificationsFragment extends Fragment {
      * @param maintenanceScheduleUid the maintenance uid
      * @return A new instance of fragment ServiceNotificationsFragment.
      */
-    public static ServiceNotificationsFragment newInstance(String maintenanceScheduleUid) {
+    public static ServiceNotificationsFragment newInstance(int maintenanceScheduleUid) {
         ServiceNotificationsFragment fragment = new ServiceNotificationsFragment();
         Bundle args = new Bundle();
-        args.putString(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
+        args.putInt(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
         fragment.setArguments(args);
         return fragment;
     }
@@ -77,7 +74,7 @@ public class ServiceNotificationsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            maintenanceScheduleUid = getArguments().getString(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY);
+            maintenanceScheduleUid = getArguments().getInt(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY);
         }
     }
 
@@ -123,17 +120,18 @@ public class ServiceNotificationsFragment extends Fragment {
                 if (vehicles.size() > 0) {
                     vehicle = vehicles.get(0);
 
-                    FirebaseDatabaseUtils.getInstance().getMaintenanceSchedule(vehicle.getMaintenanceScheduleUid(), new FirebaseDatabaseUtils.HelperListener<Set<MaintenanceScheduleEntry>>() {
+                    AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
                         @Override
-                        public void onDataReady(Set<MaintenanceScheduleEntry> data) {
-                            maintenanceScheduleEntries = data;
+                        public void run() {
+                            maintenanceScheduleEntries = appDatabase.getMaintenanceScheduleDetailDao().getMaintenanceScheduleDetailJoined(vehicle.getMaintenanceScheduleUid());
 
-                            recalculateServiceNotifications();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            Timber.e("Error getting maintenance schedule %s", databaseError);
+                            // Have to update service notifications on the main thread since it touches the UI.
+                            AppExecutor.getInstance().getUiExecutor().execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    recalculateServiceNotifications();
+                                }
+                            });
                         }
                     });
                 } else {
@@ -162,7 +160,7 @@ public class ServiceNotificationsFragment extends Fragment {
         });
 
         // Observe changes to joined maintenance/mileage.
-        LiveData<List<MaintenanceEntryJoined>> maintenance = appDatabase.getMaintenanceDao().getAllJoinedLiveData();
+        LiveData<List<MaintenanceEntryJoined>> maintenance = appDatabase.getMaintenanceEntryDao().getAllJoinedLiveData();
 
         maintenance.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntryJoined>>() {
             @Override

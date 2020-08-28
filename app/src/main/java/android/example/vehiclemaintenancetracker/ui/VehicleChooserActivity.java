@@ -113,7 +113,7 @@ public class VehicleChooserActivity extends AppCompatActivity {
                     String description = binding.editTextDescription.getText().toString();
 
                     // TODO hardcoded until we let the user define/pick a maintenance schedule
-                    String maintenanceScheduleUid = "1";
+                    int maintenanceScheduleUid = 1;
 
                     Vehicle vehicle = new Vehicle(name, description, maintenanceScheduleUid, (int) mileageUid);
                     appDatabase.getVehicleDao().insert(vehicle);

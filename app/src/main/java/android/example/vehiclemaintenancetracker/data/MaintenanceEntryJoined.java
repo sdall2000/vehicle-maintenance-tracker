@@ -8,7 +8,7 @@ import java.util.Date;
 @Entity
 public class MaintenanceEntryJoined {
     @ColumnInfo(name="maintenanceItemUid")
-    private String maintenanceItemUid;
+    private int maintenanceItemUid;
 
     @ColumnInfo(name="provider")
     private String provider;
@@ -22,7 +22,7 @@ public class MaintenanceEntryJoined {
     @ColumnInfo(name = "date")
     private Date date;
 
-    public MaintenanceEntryJoined(String maintenanceItemUid, String provider, Double cost, int mileage, Date date) {
+    public MaintenanceEntryJoined(int maintenanceItemUid, String provider, Double cost, int mileage, Date date) {
         this.maintenanceItemUid = maintenanceItemUid;
         this.provider = provider;
         this.cost = cost;
@@ -30,7 +30,7 @@ public class MaintenanceEntryJoined {
         this.date = date;
     }
 
-    public String getMaintenanceItemUid() {
+    public int getMaintenanceItemUid() {
         return maintenanceItemUid;
     }
 
