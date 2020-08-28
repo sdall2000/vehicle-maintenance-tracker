@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
-import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.databinding.FragmentDashboardBinding;
 import android.example.vehiclemaintenancetracker.utilities.ValueFormatter;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +24,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.google.firebase.database.DatabaseError;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
-import timber.log.Timber;
 
 public class DashboardFragment extends Fragment {
 
@@ -40,10 +35,6 @@ public class DashboardFragment extends Fragment {
     private static final double MS_PER_YEAR = 86_400_000.0 * 365.0;
 
     FragmentDashboardBinding binding;
-
-    // Cache the data so we don't have to refetch.
-    private String vehicleUid;
-    private Vehicle vehicle;
 
     public DashboardFragment() {
         // Required empty public constructor
@@ -71,8 +62,21 @@ public class DashboardFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        processSelectedVehicle();
+        setupObservers();
 
+        binding.buttonReportMileage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Add explode transition.
+                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle();
+
+                Intent intent = new Intent(getActivity(), MileageActivity.class);
+                startActivity(intent, bundle);
+            }
+        });
+    }
+
+    private void setupObservers() {
         LiveData<List<MileageEntry>> mileage = AppDatabase.getInstance(getContext()).getMileageEntryDao().getAllLiveData();
 
         mileage.observe(getViewLifecycleOwner(), new Observer<List<MileageEntry>>() {
@@ -130,68 +134,34 @@ public class DashboardFragment extends Fragment {
             }
         });
 
-        binding.buttonReportMileage.setOnClickListener(new View.OnClickListener() {
+        LiveData<List<Vehicle>> vehicles = AppDatabase.getInstance(getContext()).getVehicleDao().getVehiclesLive();
+        vehicles.observe(getViewLifecycleOwner(), new Observer<List<Vehicle>>() {
             @Override
-            public void onClick(View v) {
-                // Add explode transition.
-                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle();
+            public void onChanged(List<Vehicle> vehicles) {
+                if (vehicles.size() > 0) {
+                    // TODO Multiple vehicle support
+                    Vehicle vehicle = vehicles.get(0);
 
-                Intent intent = new Intent(getActivity(), MileageActivity.class);
-                startActivity(intent, bundle);
+                    binding.textViewMileageLabel.setVisibility(View.VISIBLE);
+                    binding.textViewReportedLabel.setVisibility(View.VISIBLE);
+                    binding.buttonReportMileage.setVisibility(View.VISIBLE);
+
+                    binding.textViewVehicle.setText(vehicle.getDescription());
+
+                    loadServiceNotificationsFragment(vehicle.getMaintenanceScheduleUid());
+                } else {
+                    binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
+                    binding.textViewMileageLabel.setVisibility(View.INVISIBLE);
+                    binding.textViewReportedLabel.setVisibility(View.INVISIBLE);
+                    binding.textViewAverageLabel.setVisibility(View.INVISIBLE);
+                    binding.textViewMileageAverageLabel.setVisibility(View.INVISIBLE);
+                    binding.buttonReportMileage.setVisibility(View.INVISIBLE);
+                }
             }
         });
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        processSelectedVehicle();
-        Timber.d("DashboardFragment onResume");
-    }
-
-    private void processSelectedVehicle() {
-        final String selectedVehicleUid = AppDatabase.getVehicleUid(getActivity());
-
-        // Make sure a vehicle is selected.
-        if (!TextUtils.isEmpty(selectedVehicleUid)) {
-
-            binding.textViewMileageLabel.setVisibility(View.VISIBLE);
-            binding.textViewReportedLabel.setVisibility(View.VISIBLE);
-            binding.buttonReportMileage.setVisibility(View.VISIBLE);
-
-            // See if the vehicle uid has not already been set, or, if it doesn't equal the selected vehicle uid.
-            // In those cases, we need to query for the vehicle.
-            if (TextUtils.isEmpty(vehicleUid) || !vehicleUid.equals(selectedVehicleUid)) {
-
-                FirebaseDatabaseUtils.getInstance().getVehicle(selectedVehicleUid, new FirebaseDatabaseUtils.HelperListener<Vehicle>() {
-                    @Override
-                    public void onDataReady(Vehicle data) {
-                        vehicleUid = selectedVehicleUid;
-                        vehicle = data;
-
-                        String vehicleText = String.format("%d %s %s", data.getYear(), data.getMake(), data.getModel());
-                        binding.textViewVehicle.setText(vehicleText);
-
-                        loadServiceNotificationsFragment(vehicle.getMaintenanceScheduleUid());
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
-                    }
-                });
-            }
-        } else {
-            binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
-            binding.textViewMileageLabel.setVisibility(View.INVISIBLE);
-            binding.textViewReportedLabel.setVisibility(View.INVISIBLE);
-            binding.textViewAverageLabel.setVisibility(View.INVISIBLE);
-            binding.textViewMileageAverageLabel.setVisibility(View.INVISIBLE);
-            binding.buttonReportMileage.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    private void loadServiceNotificationsFragment(String maintenanceScheduleUid) {
+    private void loadServiceNotificationsFragment(int maintenanceScheduleUid) {
 
         // TODO handle case where the vehicle uid has changed.
         // Insert service notifications fragment

@@ -2,26 +2,21 @@ package android.example.vehiclemaintenancetracker.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.example.vehiclemaintenancetracker.model.VehicleInfo;
-import android.text.TextUtils;
 
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {MileageEntry.class, MaintenanceEntry.class}, version = 1)
+@Database(entities = {MileageEntry.class, MaintenanceEntry.class, Vehicle.class, Maintenance.class, MaintenanceSchedule.class, MaintenanceScheduleDetail.class}, version = 1)
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DB_NAME = "vehicleMaintenanceDatabase.db";
+    private static final String PREPOPULATED_DATABASE_ASSET = "database/maintenance.db";
 
     public static final String MAINTENANCE_SCHEDULE_UID_KEY = "maintenanceScheduleUid";
 
     private static final String SHARED_PREFERENCES_KEY = "VehicheMaintenanceSharedPreferences";
-
-    private static final String SELECTED_VEHICLE_UID_KEY = "selectedVehicleUid";
-    private static final String STARTING_MILEAGE_KEY = "startingMileageKey";
-    private static final String STARTING_DATE_KEY = "startingDateKey";
 
     private static final String DAY_WARNING_THRESHOLD_KEY = "dayWarningThreshold";
     private static final String MILEAGE_WARNING_THRESHOLD_KEY = "mileageWarningThreshold";
@@ -34,98 +29,25 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract MileageEntryDao getMileageEntryDao();
 
+    public abstract MaintenanceEntryDao getMaintenanceEntryDao();
+
+    public abstract VehicleDao getVehicleDao();
+
     public abstract MaintenanceDao getMaintenanceDao();
+    public abstract MaintenanceScheduleDao getMaintenanceScheduleDao();
+    public abstract MaintenanceScheduleDetailDao getMaintenanceScheduleDetailDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
                     context,
                     AppDatabase.class,
-                    DB_NAME).build();
+                    DB_NAME)
+                    .createFromAsset(PREPOPULATED_DATABASE_ASSET)
+                    .build();
         }
 
         return instance;
-    }
-
-    public static VehicleInfo getVehicleInfo(Context context) {
-        VehicleInfo vehicleInfo = null;
-
-        String vehicleUid = getVehicleUid(context);
-        int startingMileage = getStartingMileage(context);
-        long startingDateEpochMs = getStartingDateEpochMs(context);
-
-        if (!TextUtils.isEmpty(vehicleUid)) {
-            vehicleInfo = new VehicleInfo(vehicleUid, startingMileage, startingDateEpochMs);
-        }
-
-        return vehicleInfo;
-    }
-
-    public static void setVehicleInfo(Context context, VehicleInfo vehicleInfo) {
-        if (vehicleInfo != null) {
-            setVehicleUid(context, vehicleInfo.getVehicleUid());
-            setStartingMileage(context, vehicleInfo.getStartingMileage());
-            setStartingDateEpochMs(context, vehicleInfo.getStartingDateEpochMs());
-        } else {
-            // Pass nulls to clear settings.
-            setVehicleUid(context, null);
-            setStartingMileage(context, null);
-            setStartingDateEpochMs(context, null);
-        }
-    }
-
-    /**
-     * Gets the selected vehicle uid
-     *
-     * @param context The context to use for fetching the shared preferences
-     * @return The vehicle uid, or null if it is not set.
-     */
-    public static String getVehicleUid(Context context) {
-        return getSharedPreferences(context).getString(SELECTED_VEHICLE_UID_KEY, null);
-    }
-
-    public static void setVehicleUid(Context context, String vehicleUid) {
-        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
-
-        if (!TextUtils.isEmpty(vehicleUid)) {
-            editor.putString(SELECTED_VEHICLE_UID_KEY, vehicleUid);
-        } else {
-            editor.remove(SELECTED_VEHICLE_UID_KEY);
-        }
-
-        editor.apply();
-    }
-
-    public static int getStartingMileage(Context context) {
-        return getSharedPreferences(context).getInt(STARTING_MILEAGE_KEY, 0);
-    }
-
-    public static void setStartingMileage(Context context, Integer startingMileage) {
-        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
-
-        if (startingMileage != null) {
-            editor.putInt(STARTING_MILEAGE_KEY, startingMileage);
-        } else {
-            editor.remove(STARTING_MILEAGE_KEY);
-        }
-
-        editor.apply();
-    }
-
-    public static long getStartingDateEpochMs(Context context) {
-        return getSharedPreferences(context).getLong(STARTING_DATE_KEY, 0);
-    }
-
-    public static void setStartingDateEpochMs(Context context, Long startingDateEpochMs) {
-        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
-
-        if (startingDateEpochMs != null) {
-            editor.putLong(STARTING_DATE_KEY, startingDateEpochMs);
-        } else {
-            editor.remove(STARTING_DATE_KEY);
-        }
-
-        editor.apply();
     }
 
     public static int getDayWarningThreshold(Context context) {
@@ -169,7 +91,8 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     public void deleteData() {
-        getMaintenanceDao().deleteAll();
+        getMaintenanceEntryDao().deleteAll();
         getMileageEntryDao().deleteAll();
+        getVehicleDao().deleteAll();
     }
 }

@@ -2,24 +2,17 @@ package android.example.vehiclemaintenancetracker.utilities;
 
 import android.content.Context;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
-import android.example.vehiclemaintenancetracker.data.FirebaseDatabaseUtils;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
+import android.example.vehiclemaintenancetracker.data.MaintenanceScheduleDetailJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
-import android.example.vehiclemaintenancetracker.data.VehicleDetails;
-import android.example.vehiclemaintenancetracker.model.MaintenanceScheduleEntry;
+import android.example.vehiclemaintenancetracker.data.VehicleStartingMileage;
 import android.example.vehiclemaintenancetracker.model.ServiceNotification;
 import android.example.vehiclemaintenancetracker.model.Status;
-import android.example.vehiclemaintenancetracker.model.VehicleInfo;
-
-import com.google.firebase.database.DatabaseError;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-
-import timber.log.Timber;
 
 public class ServiceNotificationGenerator {
 
@@ -39,7 +32,7 @@ public class ServiceNotificationGenerator {
     public static List<ServiceNotification> generateServiceNotifications(
             int currentMileage,
             long currentDateEpochMs,
-            Set<MaintenanceScheduleEntry> maintenanceScheduleEntries,
+            List<MaintenanceScheduleDetailJoined> maintenanceScheduleEntries,
             List<MaintenanceEntryJoined> maintenanceEntries,
             int mileageWarningThreshold,
             int dateWarningThresholdDays,
@@ -49,8 +42,8 @@ public class ServiceNotificationGenerator {
         List<ServiceNotification> serviceNotifications = new ArrayList<>();
 
         // For each maintenance schedule entry, figure out if a notification is needed.
-        for (MaintenanceScheduleEntry scheduleEntry : maintenanceScheduleEntries) {
-            MaintenanceEntryJoined mostRecentMaintenanceEntry = getMostRecentMaintenanceEntry(scheduleEntry.getMaintenanceItemId(), maintenanceEntries);
+        for (MaintenanceScheduleDetailJoined scheduleEntry : maintenanceScheduleEntries) {
+            MaintenanceEntryJoined mostRecentMaintenanceEntry = getMostRecentMaintenanceEntry(scheduleEntry.getMaintenanceUid(), maintenanceEntries);
 
             // Default last mileage and date to vehicle starting values.
             int lastServiceMileage = startingMileage;
@@ -83,63 +76,57 @@ public class ServiceNotificationGenerator {
 
     /**
      * This method generates the service notifications by pulling the required data from their
-     * various sources - shared preferences, SQLite, Firebase, etc.
+     * various sources - shared preferences, SQLite, etc.
      *
      * @param context                     The application context
      * @param serviceNotificationListener The listener to receive the service notifications
      */
     public static void generateServiceNotifications(final Context context, final ServiceNotificationsListener serviceNotificationListener) {
-        final VehicleInfo vehicleInfo = AppDatabase.getVehicleInfo(context);
+        AppDatabase appDatabase = AppDatabase.getInstance(context);
 
-        if (vehicleInfo != null) {
+        List<VehicleStartingMileage> vehicleList = appDatabase.getVehicleDao().getVehicleStartingMileage();
+
+        if (vehicleList.size() > 0) {
+            final VehicleStartingMileage vehicle = vehicleList.get(0);
             // Load mileage entries, so we can get the most recent recorded mileage.
-            final List<MileageEntry> mileageEntries = AppDatabase.getInstance(context).getMileageEntryDao().getAll();
+            final List<MileageEntry> mileageEntries = appDatabase.getMileageEntryDao().getAll();
 
             // Load the maintenance performed.
-            final List<MaintenanceEntryJoined> maintenanceEntries = AppDatabase.getInstance(context).getMaintenanceDao().getAllJoined();
+            final List<MaintenanceEntryJoined> maintenanceEntries = appDatabase.getMaintenanceEntryDao().getAllJoined();
 
-            FirebaseDatabaseUtils.getInstance().getVehicleDetails(vehicleInfo.getVehicleUid(), new FirebaseDatabaseUtils.HelperListener<VehicleDetails>() {
-                @Override
-                public void onDataReady(VehicleDetails vehicleDetails) {
-                    // Now we should be able to calculate the notifications.
-                    MileageEntry mostRecentMileage = null;
+            final List<MaintenanceScheduleDetailJoined> maintenanceScheduleDetail = appDatabase.getMaintenanceScheduleDetailDao().getMaintenanceScheduleDetailJoined(vehicle.getMaintenanceScheduleUid());
+            // Now we should be able to calculate the notifications.
+            MileageEntry mostRecentMileage = null;
 
-                    if (mileageEntries != null && mileageEntries.size() > 0) {
-                        mostRecentMileage = mileageEntries.get(0);
-                    }
+            if (mileageEntries != null && mileageEntries.size() > 0) {
+                mostRecentMileage = mileageEntries.get(0);
+            }
 
-                    int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicleInfo.getStartingMileage();
-                    long currentDate = System.currentTimeMillis();
+            int currentMileage = mostRecentMileage != null ? mostRecentMileage.getMileage() : vehicle.getStartingMileage();
+            long currentDate = System.currentTimeMillis();
 
-                    List<ServiceNotification> serviceNotifications = ServiceNotificationGenerator.generateServiceNotifications(
-                            currentMileage,
-                            currentDate,
-                            vehicleDetails.getMaintenanceSchedule(),
-                            maintenanceEntries,
-                            AppDatabase.getMileageWarningThreshold(context),
-                            AppDatabase.getDayWarningThreshold(context),
-                            vehicleInfo.getStartingMileage(),
-                            vehicleInfo.getStartingDateEpochMs());
+            List<ServiceNotification> serviceNotifications = ServiceNotificationGenerator.generateServiceNotifications(
+                    currentMileage,
+                    currentDate,
+                    maintenanceScheduleDetail,
+                    maintenanceEntries,
+                    AppDatabase.getMileageWarningThreshold(context),
+                    AppDatabase.getDayWarningThreshold(context),
+                    vehicle.getStartingMileage(),
+                    vehicle.getStartingDate().getTime());
 
-                    serviceNotificationListener.onNotificationsReady(serviceNotifications);                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Timber.e("Database error when retrieving vehicle details: %s", databaseError.getMessage());
-                    serviceNotificationListener.onError(databaseError.getMessage());
-                }
-            });
+            serviceNotificationListener.onNotificationsReady(serviceNotifications);
         } else {
             // No vehicle is selected.  Just return an empty list of service notifications.
             serviceNotificationListener.onNotificationsReady(new ArrayList<ServiceNotification>());
         }
     }
 
-    private static MaintenanceEntryJoined getMostRecentMaintenanceEntry(String maintenanceItemId, List<MaintenanceEntryJoined> maintenanceEntries) {
+    private static MaintenanceEntryJoined getMostRecentMaintenanceEntry(int maintenanceItemId, List<MaintenanceEntryJoined> maintenanceEntries) {
         // Maintenance entries are sorted by date descending.  Return the first match if any.
         if (maintenanceEntries != null) {
             for (MaintenanceEntryJoined entry : maintenanceEntries) {
-                if (entry.getMaintenanceItemUid().equals(maintenanceItemId)) {
+                if (entry.getMaintenanceItemUid() == maintenanceItemId) {
                     return entry;
                 }
             }
@@ -163,7 +150,7 @@ public class ServiceNotificationGenerator {
             long currentDateEpochMs,
             int lastServiceMileage,
             long lastServiceDateEpochMs,
-            MaintenanceScheduleEntry maintenanceScheduleEntry,
+            MaintenanceScheduleDetailJoined maintenanceScheduleEntry,
             int mileageWarningThreshold,
             int dateWarningThresholdDays) {
 
@@ -172,15 +159,15 @@ public class ServiceNotificationGenerator {
         Integer mileageDue = null;
 
         // See if mileage applies to this maintenance schedule entry
-        if (maintenanceScheduleEntry.getMileageInterval() != null) {
-            mileageDue = lastServiceMileage + maintenanceScheduleEntry.getMileageInterval();
+        if (maintenanceScheduleEntry.getMileInterval() != null) {
+            mileageDue = lastServiceMileage + maintenanceScheduleEntry.getMileInterval();
 
             // Determine how many miles have passed since the last service.
             int milesDelta = currentMileage - lastServiceMileage;
 
-            if (milesDelta >= maintenanceScheduleEntry.getMileageInterval()) {
+            if (milesDelta >= maintenanceScheduleEntry.getMileInterval()) {
                 mileageStatus = Status.Overdue;
-            } else if (milesDelta + mileageWarningThreshold >= maintenanceScheduleEntry.getMileageInterval()) {
+            } else if (milesDelta + mileageWarningThreshold >= maintenanceScheduleEntry.getMileInterval()) {
                 mileageStatus = Status.Upcoming;
             }
         }
@@ -219,7 +206,7 @@ public class ServiceNotificationGenerator {
 
         // Create our service notification
         return new ServiceNotification(
-                maintenanceScheduleEntry.getMaintenance(),
+                maintenanceScheduleEntry.getMaintenanceName(),
                 mileageDue,
                 dateDue,
                 mileageStatus,

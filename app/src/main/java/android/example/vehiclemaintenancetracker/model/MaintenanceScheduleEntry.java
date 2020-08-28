@@ -1,7 +1,7 @@
 package android.example.vehiclemaintenancetracker.model;
 
 public class MaintenanceScheduleEntry {
-    private String maintenanceItemId;
+    private int maintenanceItemId;
     private String maintenance;
     private Integer dayInterval;
     private Integer mileageInterval;
@@ -10,14 +10,14 @@ public class MaintenanceScheduleEntry {
 
     }
 
-    public MaintenanceScheduleEntry(String maintenanceItemId, String maintenance, Integer dayInterval, Integer mileageInterval) {
+    public MaintenanceScheduleEntry(int maintenanceItemId, String maintenance, Integer dayInterval, Integer mileageInterval) {
         this.maintenanceItemId = maintenanceItemId;
         this.maintenance = maintenance;
         this.dayInterval = dayInterval;
         this.mileageInterval = mileageInterval;
     }
 
-    public String getMaintenanceItemId() {
+    public int getMaintenanceItemId() {
         return maintenanceItemId;
     }
 

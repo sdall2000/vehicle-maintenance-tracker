@@ -1,33 +1,57 @@
 package android.example.vehiclemaintenancetracker.data;
 
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+@Entity
 public class Vehicle {
-    private int year;
-    private String make;
-    private String model;
-    private String maintenanceScheduleUid;
+    @PrimaryKey(autoGenerate = true)
+    private final int uid;
 
-    public Vehicle() { };
+    private final String name;
+    private final String description;
+    private final int maintenanceScheduleUid;
+    private final int startingMileageEntryUid;
 
-    public Vehicle(int year, String make, String model, String maintenanceScheduleUid) {
-        this.year = year;
-        this.make = make;
-        this.model = model;
+    @Ignore
+    public Vehicle(
+            String name,
+            String description,
+            int maintenanceScheduleUid,
+            int startingMileageEntryUid) {
+        this(0, name, description, maintenanceScheduleUid, startingMileageEntryUid);
+    }
+
+    public Vehicle(
+            int uid,
+            String name,
+            String description,
+            int maintenanceScheduleUid,
+            int startingMileageEntryUid) {
+        this.uid = uid;
+        this.name = name;
+        this.description = description;
         this.maintenanceScheduleUid = maintenanceScheduleUid;
+        this.startingMileageEntryUid = startingMileageEntryUid;
+    }
+    public int getUid() {
+        return uid;
     }
 
-    public int getYear() {
-        return year;
+    public String getName() {
+        return name;
     }
 
-    public String getMake() {
-        return make;
+    public String getDescription() {
+        return description;
     }
 
-    public String getModel() {
-        return model;
-    }
-
-    public String getMaintenanceScheduleUid() {
+    public int getMaintenanceScheduleUid() {
         return maintenanceScheduleUid;
+    }
+
+    public int getStartingMileageEntryUid() {
+        return startingMileageEntryUid;
     }
 }

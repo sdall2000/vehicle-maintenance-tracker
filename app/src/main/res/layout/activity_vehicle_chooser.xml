@@ -19,43 +19,32 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textViewYear"
+        android:id="@+id/textViewVehicleName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/year_label"
+        android:text="@string/vehicle_name_label"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextName"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewSummary" />
+        app:layout_constraintTop_toTopOf="@+id/editTextName" />
 
-    <Spinner
-        android:id="@+id/spinnerYear"
+    <EditText
+        android:id="@+id/editTextName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewYear"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="@+id/textViewYear"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewSummary" />
 
     <TextView
-        android:id="@+id/textViewMake"
+        android:id="@+id/textViewVehicleDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/make_label"
-        app:layout_constraintStart_toStartOf="@+id/textViewYear"
-        app:layout_constraintTop_toBottomOf="@+id/textViewYear" />
-
-    <TextView
-        android:id="@+id/textViewModel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/model_label"
-        app:layout_constraintStart_toStartOf="@+id/textViewMake"
-        app:layout_constraintTop_toBottomOf="@+id/textViewMake" />
+        android:text="@string/vehicle_description_label"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextDescription"
+        app:layout_constraintStart_toStartOf="@+id/textViewVehicleName"
+        app:layout_constraintTop_toTopOf="@+id/editTextDescription" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline4"
@@ -64,25 +53,15 @@
         android:orientation="vertical"
         app:layout_constraintGuide_begin="123dp" />
 
-    <Spinner
-        android:id="@+id/spinnerMake"
+    <EditText
+        android:id="@+id/editTextDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewMake"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="@+id/textViewMake" />
-
-    <Spinner
-        android:id="@+id/spinnerModel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewModel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="@+id/textViewModel" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextName" />
 
     <Button
         android:id="@+id/buttonSelectVehicle"
@@ -100,8 +79,8 @@
         android:layout_height="wrap_content"
         android:text="@string/start_mileage_label"
         app:layout_constraintBottom_toBottomOf="@+id/editTextMileage"
-        app:layout_constraintStart_toStartOf="@+id/textViewModel"
-        app:layout_constraintTop_toTopOf="@+id/editTextMileage" />
+        app:layout_constraintTop_toTopOf="@+id/editTextMileage"
+        tools:layout_editor_absoluteX="8dp" />
 
     <EditText
         android:id="@+id/editTextMileage"
@@ -138,12 +117,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:text="@string/starting_info_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerModel" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextDescription" />
 
     <TextView
         android:id="@+id/textViewSubmitInfo"
