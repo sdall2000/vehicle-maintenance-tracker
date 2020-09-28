@@ -1,24 +1,24 @@
 package android.example.vehiclemaintenancetracker.ui;
 
-import android.app.ActivityOptions;
-import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.databinding.ActivityMainBinding;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.ViewPager;
-
-import com.google.android.material.tabs.TabLayout;
+import androidx.appcompat.widget.Toolbar;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import org.jetbrains.annotations.NotNull;
 
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
+    private AppBarConfiguration appBarConfiguration;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,13 +33,23 @@ public class MainActivity extends AppCompatActivity {
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
-        ViewPager viewPager = findViewById(R.id.view_pager);
-        viewPager.setAdapter(sectionsPagerAdapter);
-        TabLayout tabs = findViewById(R.id.tabs);
-        tabs.setupWithViewPager(viewPager);
+        appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_dashboard, R.id.nav_history, R.id.nav_mileage, R.id.nav_settings)
+                .setDrawerLayout(binding.drawerLayout) // TODO deprecation
+                .build();
+
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(binding.navView, navController);
+
+//        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
+//        ViewPager viewPager = findViewById(R.id.view_pager);
+//        viewPager.setAdapter(sectionsPagerAdapter);
+//        TabLayout tabs = findViewById(R.id.tabs);
+//        tabs.setupWithViewPager(viewPager);
     }
 
     @Override
@@ -49,15 +59,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // Bring up settings.
-        if (item.getItemId() == R.id.action_settings) {
-            // Add explode transition.
-            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle();
-
-            Intent intent = new Intent(MainActivity.this, VehicleChooserActivity.class);
-            startActivity(intent, bundle);
-        }
-        return super.onOptionsItemSelected(item);
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 }

@@ -67,4 +67,12 @@
     <string name="ad_unit_id_test_ads">ca-app-pub-3940256099942544/6300978111</string>
     <string name="vehicle_name_label">Name:</string>
     <string name="vehicle_description_label">Description:</string>
+    <string name="mileage_menu_label">Mileage</string>
+    <string name="maintenance_menu_label">maintenance</string>
+    <string name="settings_menu_label">Settings</string>
+    <string name="dashboard_menu_label">Dashboard</string>
+    <string name="history_menu_label">Maintenance History</string>
+    <string name="menu_dashboard">Dashboard</string>
+    <string name="menu_maintenance_history">Maintenance History</string>
+    <string name="nav_drawer_example">Vehicle Maintenance Tracker</string>
 </resources>
