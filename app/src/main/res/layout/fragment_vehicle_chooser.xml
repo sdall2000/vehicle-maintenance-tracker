@@ -79,8 +79,8 @@
         android:layout_height="wrap_content"
         android:text="@string/start_mileage_label"
         app:layout_constraintBottom_toBottomOf="@+id/editTextMileage"
-        app:layout_constraintTop_toTopOf="@+id/editTextMileage"
-        tools:layout_editor_absoluteX="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/editTextMileage" />
 
     <EditText
         android:id="@+id/editTextMileage"
