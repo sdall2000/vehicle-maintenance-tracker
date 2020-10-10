@@ -2,14 +2,18 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mobile_navigation"
+    android:id="@+id/nav_graph"
     app:startDestination="@id/nav_dashboard">
 
     <fragment
         android:id="@+id/nav_dashboard"
         android:name="android.example.vehiclemaintenancetracker.ui.DashboardFragment"
         android:label="@string/menu_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_nav_dashboard_to_nav_mileage"
+            app:destination="@id/nav_mileage" />
+    </fragment>
     <fragment
         android:id="@+id/nav_history"
         android:name="android.example.vehiclemaintenancetracker.ui.HistoryFragment"
@@ -18,5 +22,11 @@
     <fragment
         android:id="@+id/nav_settings"
         android:name="android.example.vehiclemaintenancetracker.ui.VehicleChooserFragment"
-        android:label="VehicleChooserFragment" />
+        android:label="VehicleChooserFragment"
+        tools:layout="@layout/fragment_vehicle_chooser"/>
+    <fragment
+        android:id="@+id/nav_mileage"
+        android:name="android.example.vehiclemaintenancetracker.ui.MileageFragment"
+        android:label="MileageFragment"
+        tools:layout="@layout/fragment_mileage"/>
 </navigation>
