@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_nav_dashboard_to_nav_mileage"
             app:destination="@id/nav_mileage" />
+        <action
+            android:id="@+id/action_nav_dashboard_to_nav_maintenance"
+            app:destination="@id/nav_maintenance" />
     </fragment>
     <fragment
         android:id="@+id/nav_history"
@@ -29,4 +32,21 @@
         android:name="android.example.vehiclemaintenancetracker.ui.MileageFragment"
         android:label="MileageFragment"
         tools:layout="@layout/fragment_mileage"/>
+    <fragment
+        android:id="@+id/nav_maintenance"
+        android:name="android.example.vehiclemaintenancetracker.ui.MaintenanceFragment"
+        android:label="MaintenanceFragment" >
+        <argument
+            android:name="maintenance_schedule_uid"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/service_notifications"
+        android:name="android.example.vehiclemaintenancetracker.ui.ServiceNotificationsFragment"
+        android:label="fragment_service_notifications"
+        tools:layout="@layout/fragment_service_notifications" >
+        <action
+            android:id="@+id/action_service_notifications_to_nav_maintenance"
+            app:destination="@id/nav_maintenance" />
+    </fragment>
 </navigation>

@@ -68,7 +68,7 @@
     <string name="vehicle_name_label">Name:</string>
     <string name="vehicle_description_label">Description:</string>
     <string name="mileage_menu_label">Mileage</string>
-    <string name="maintenance_menu_label">maintenance</string>
+    <string name="maintenance_menu_label">Maintenance</string>
     <string name="settings_menu_label">Settings</string>
     <string name="dashboard_menu_label">Dashboard</string>
     <string name="history_menu_label">Maintenance History</string>

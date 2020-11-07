@@ -25,6 +25,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -97,13 +99,18 @@ public class ServiceNotificationsFragment extends Fragment {
 
         binding.buttonEnterService.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                // Add explode transition.
-                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle();
+            public void onClick(View view) {
 
-                Intent intent = new Intent(getActivity(), MaintenanceActivity.class);
-                intent.putExtra(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
-                startActivity(intent, bundle);
+//                NavDirections action = ServiceNotificationsFragmentDirections.actionServiceNotificationsToNavMaintenance(maintenanceScheduleUid);
+                NavDirections action = DashboardFragmentDirections.actionNavDashboardToNavMaintenance(maintenanceScheduleUid);
+                Navigation.findNavController(view).navigate(action);
+
+                // Add explode transition.
+//                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle();
+
+//                Intent intent = new Intent(getActivity(), MaintenanceActivity.class);
+//                intent.putExtra(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
+//                startActivity(intent, bundle);
             }
         });
     }
