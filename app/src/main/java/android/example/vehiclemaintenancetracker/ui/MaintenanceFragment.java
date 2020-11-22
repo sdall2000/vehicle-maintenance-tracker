@@ -2,23 +2,30 @@ package android.example.vehiclemaintenancetracker.ui;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntry;
 import android.example.vehiclemaintenancetracker.data.MaintenanceScheduleDetailJoined;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
-import android.example.vehiclemaintenancetracker.databinding.ActivityMaintenanceBinding;
+import android.example.vehiclemaintenancetracker.databinding.FragmentMaintenanceBinding;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.example.vehiclemaintenancetracker.utilities.DatePickerHelper;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -26,28 +33,43 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MaintenanceActivity extends AppCompatActivity {
-    private ActivityMaintenanceBinding binding;
+public class MaintenanceFragment extends Fragment {
+
+    private FragmentMaintenanceBinding binding;
     private DateFormat dateFormat;
 
+    public MaintenanceFragment() {
+        // Required empty public constructor
+    }
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        final Context context = getContext();
 
-        dateFormat = android.text.format.DateFormat.getDateFormat(this);
+        dateFormat = android.text.format.DateFormat.getDateFormat(context);
 
-        binding = ActivityMaintenanceBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        binding = FragmentMaintenanceBinding.inflate(inflater, container, false);
 
         // Use the DatePickerHelper to configure date picker functionality and set initial value.
         DatePickerHelper.configureDateChooser(
-                this,
+                context,
                 binding.textViewDatePerformed,
                 binding.imageButton,
                 dateFormat,
                 new Date());
 
-        binding.buttonSubmitMaintenance.setOnClickListener(new View.OnClickListener() {
+        binding.buttonSubmitMaintenance.setOnClickListener(createOnClickListener(context));
+
+        int maintenanceScheduleUid = MaintenanceFragmentArgs.fromBundle(getArguments()).getMaintenanceScheduleUid();
+
+        populateSpinner(maintenanceScheduleUid);
+
+        return binding.getRoot();
+    }
+
+    private View.OnClickListener createOnClickListener(final Context context) {
+        return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (inputValid()) {
@@ -75,7 +97,7 @@ public class MaintenanceActivity extends AppCompatActivity {
                         AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
                             @Override
                             public void run() {
-                                AppDatabase appDatabase = AppDatabase.getInstance(MaintenanceActivity.this);
+                                AppDatabase appDatabase = AppDatabase.getInstance(context);
 
                                 // Create a mileage entry
                                 MileageEntry mileageEntry = new MileageEntry(mileage, date);
@@ -93,37 +115,35 @@ public class MaintenanceActivity extends AppCompatActivity {
                                 // Update app widgets.
                                 updateAppWidgets();
 
-                                // Complete the activity.
-                                finish();
+                                AppExecutor.getInstance().getUiExecutor().execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // Go to previous fragment
+                                        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment);
+                                        navController.popBackStack();
+                                    }
+                                });
                             }
                         });
 
                     } catch (ParseException e) {
                         // Should never happen because we always validate the fields before using them.
-                        Toast.makeText(MaintenanceActivity.this, R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
                     }
                 }
             }
-        });
-
-        // See if the maintenance schedule is defined.  Eventually we will be passed a vehicle instead.
-        // TODO pass the vehicle
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            int value = extras.getInt(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY);
-            if (value != 0) {
-                populateSpinner(value);
-            }
-        }
+        };
     }
 
     private void populateSpinner(final int maintenanceScheduleUid) {
+        final Context context = getContext();
+
         AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
             @Override
             public void run() {
                 final List<MaintenanceScheduleDetailJoined> maintenanceScheduleDetailList =
                         AppDatabase
-                                .getInstance(MaintenanceActivity.this)
+                                .getInstance(context)
                                 .getMaintenanceScheduleDetailDao().
                                 getMaintenanceScheduleDetailJoined(maintenanceScheduleUid);
 
@@ -131,7 +151,7 @@ public class MaintenanceActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         ArrayAdapter<MaintenanceScheduleDetailJoined> adapter = new ArrayAdapter<>(
-                                MaintenanceActivity.this,
+                                context,
                                 android.R.layout.simple_spinner_item,
                                 maintenanceScheduleDetailList);
                         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
@@ -180,10 +200,12 @@ public class MaintenanceActivity extends AppCompatActivity {
     }
 
     private void updateAppWidgets() {
-        Intent intent = new Intent(this, VehicleMaintenanceTrackerAppWidget.class);
+        Context context = getContext();
+
+        Intent intent = new Intent(context, VehicleMaintenanceTrackerAppWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(this).getAppWidgetIds(new ComponentName(this, VehicleMaintenanceTrackerAppWidget.class));
+        int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, VehicleMaintenanceTrackerAppWidget.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-        sendBroadcast(intent);
+        context.sendBroadcast(intent);
     }
 }

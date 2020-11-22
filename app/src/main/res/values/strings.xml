@@ -21,9 +21,9 @@
     <string name="average_label">You average</string>
     <string name="reported_label">Reported:</string>
     <string name="mileage_average_label">miles per year</string>
-    <string name="button_report_mileage">Report Mileage</string>
+    <string name="button_report_mileage">Mileage</string>
     <string name="service_notification_label">Service Notifications</string>
-    <string name="button_enter_service">Enter Service</string>
+    <string name="button_enter_service">Service</string>
     <string name="title_activity_mileage">Mileage</string>
     <string name="enter_mileage_label">Enter Mileage:</string>
     <string name="effective_date_label">Effective Date:</string>
@@ -67,4 +67,13 @@
     <string name="ad_unit_id_test_ads">ca-app-pub-3940256099942544/6300978111</string>
     <string name="vehicle_name_label">Name:</string>
     <string name="vehicle_description_label">Description:</string>
+    <string name="mileage_menu_label">Mileage</string>
+    <string name="maintenance_menu_label">Maintenance</string>
+    <string name="settings_menu_label">Settings</string>
+    <string name="dashboard_menu_label">Dashboard</string>
+    <string name="history_menu_label">Maintenance History</string>
+    <string name="menu_dashboard">Dashboard</string>
+    <string name="menu_maintenance_history">Maintenance History</string>
+    <string name="nav_drawer_example">Vehicle Maintenance Tracker</string>
+    <string name="no_vehicle_defined">No vehicle defined</string>
 </resources>

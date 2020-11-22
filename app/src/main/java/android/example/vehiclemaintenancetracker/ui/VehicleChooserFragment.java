@@ -8,34 +8,47 @@ import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.MileageEntry;
 import android.example.vehiclemaintenancetracker.data.Vehicle;
 import android.example.vehiclemaintenancetracker.data.VehicleStartingMileage;
-import android.example.vehiclemaintenancetracker.databinding.ActivityVehicleChooserBinding;
+import android.example.vehiclemaintenancetracker.databinding.FragmentVehicleChooserBinding;
 import android.example.vehiclemaintenancetracker.ui.widget.VehicleMaintenanceTrackerAppWidget;
 import android.example.vehiclemaintenancetracker.utilities.AppExecutor;
 import android.example.vehiclemaintenancetracker.utilities.DatePickerHelper;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
-public class VehicleChooserActivity extends AppCompatActivity {
+public class VehicleChooserFragment extends Fragment {
 
     private DateFormat dateFormat;
+    private FragmentVehicleChooserBinding binding;
 
-    private ActivityVehicleChooserBinding binding;
+    public VehicleChooserFragment() {
+        // Required empty public constructor
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityVehicleChooserBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    }
 
-        dateFormat = android.text.format.DateFormat.getDateFormat(this);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+
+        binding = FragmentVehicleChooserBinding.inflate(getLayoutInflater());
+
+        dateFormat = android.text.format.DateFormat.getDateFormat(getContext());
 
         binding.buttonSelectVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,21 +66,31 @@ public class VehicleChooserActivity extends AppCompatActivity {
                 loadVehicle();
             }
         });
+
+
+        return binding.getRoot();
+//        return inflater.inflate(R.layout.fragment_vehicle_chooser, container, false);
     }
 
     private void loadVehicle() {
+        List<VehicleStartingMileage> vehicles = AppDatabase.getInstance(getContext()).getVehicleDao().getVehicleStartingMileage();
+
+        final VehicleStartingMileage vehicle = vehicles.size() >= 1 ? vehicles.get(0) : null;
+
+        AppExecutor.getInstance().getUiExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                populateVehicleUi(vehicle);
+            }
+        });
+    }
+
+    private void populateVehicleUi(VehicleStartingMileage vehicle) {
         // Defaults if vehicle has not been defined.
         Date startingDate = new Date();
         int startingMileage = 0;
 
-        List<VehicleStartingMileage> vehicles = AppDatabase.getInstance(this).getVehicleDao().getVehicleStartingMileage();
-
-        VehicleStartingMileage vehicle;
-
-        if (vehicles.size() >= 1) {
-            vehicle = vehicles.get(0);
-
-            if (vehicle != null) {
+        if (vehicle != null) {
                 // If the vehicle uid has been set, then the starting mileage/date will be as well.
                 startingMileage = vehicle.getStartingMileage();
 
@@ -76,13 +99,13 @@ public class VehicleChooserActivity extends AppCompatActivity {
 
                 binding.editTextName.setText(vehicle.getName());
                 binding.editTextDescription.setText(vehicle.getDescription());
-            }
         }
+
         binding.editTextMileage.setText(String.format("%d", startingMileage));
 
         // Use the DatePickerHelper to configure date picker functionality and set initial value.
         DatePickerHelper.configureDateChooser(
-                this,
+                getContext(),
                 binding.textFieldDate,
                 binding.imageButton,
                 dateFormat,
@@ -92,7 +115,7 @@ public class VehicleChooserActivity extends AppCompatActivity {
     private void saveVehicle() {
         String dateString = binding.textFieldDate.getText().toString();
         String mileageString = binding.editTextMileage.getText().toString();
-        final AppDatabase appDatabase = AppDatabase.getInstance(this);
+        final AppDatabase appDatabase = AppDatabase.getInstance(getContext());
 
         try {
             final Date date = dateFormat.parse(dateString);
@@ -121,25 +144,29 @@ public class VehicleChooserActivity extends AppCompatActivity {
                     // Update the app widgets.
                     updateAppWidgets();
 
-                    // Complete this activity.
-                    Intent intent = new Intent();
-                    setResult(RESULT_OK, intent);
-                    finish();
+                    AppExecutor.getInstance().getUiExecutor().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Go to previous fragment
+                            NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment);
+                            navController.popBackStack();
+                        }
+                    });
                 }
             });
 
         } catch (ParseException e) {
             // Should never happen because we always validate the fields before using them.
-            Toast.makeText(VehicleChooserActivity.this, R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), R.string.validation_error_unhandled, Toast.LENGTH_LONG).show();
         }
     }
 
     private void updateAppWidgets() {
-        Intent intent = new Intent(this, VehicleMaintenanceTrackerAppWidget.class);
+        Intent intent = new Intent(getContext(), VehicleMaintenanceTrackerAppWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(this).getAppWidgetIds(new ComponentName(this, VehicleMaintenanceTrackerAppWidget.class));
+        int[] ids = AppWidgetManager.getInstance(getContext()).getAppWidgetIds(new ComponentName(getContext(), VehicleMaintenanceTrackerAppWidget.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-        sendBroadcast(intent);
+        getContext().sendBroadcast(intent);
     }
 
     private boolean inputValid() {

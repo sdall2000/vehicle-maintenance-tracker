@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "972088068564",
+    "firebase_url": "https://vehicle-maintenance-trac-d36d1.firebaseio.com",
+    "project_id": "vehicle-maintenance-trac-d36d1",
+    "storage_bucket": "vehicle-maintenance-trac-d36d1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:972088068564:android:21a530816cd00b1603ee41",
+        "android_client_info": {
+          "package_name": "android.example.vehiclemaintenancetracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "972088068564-8qtqcoka34chjmadegku271q0lefeed1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnElWzhfSfL5yeOajJNV1kTY6moKRlQDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "972088068564-8qtqcoka34chjmadegku271q0lefeed1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

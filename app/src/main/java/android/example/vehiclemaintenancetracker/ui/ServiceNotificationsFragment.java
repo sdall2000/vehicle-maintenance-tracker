@@ -1,7 +1,5 @@
 package android.example.vehiclemaintenancetracker.ui;
 
-import android.app.ActivityOptions;
-import android.content.Intent;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
@@ -21,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -47,7 +44,6 @@ public class ServiceNotificationsFragment extends Fragment {
     private List<MaintenanceScheduleDetailJoined> maintenanceScheduleEntries;
 
     FragmentServiceNotificationsBinding binding;
-    private int maintenanceScheduleUid;
 
     private VehicleStartingMileage vehicle;
 
@@ -59,23 +55,10 @@ public class ServiceNotificationsFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param maintenanceScheduleUid the maintenance uid
      * @return A new instance of fragment ServiceNotificationsFragment.
      */
-    public static ServiceNotificationsFragment newInstance(int maintenanceScheduleUid) {
-        ServiceNotificationsFragment fragment = new ServiceNotificationsFragment();
-        Bundle args = new Bundle();
-        args.putInt(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            maintenanceScheduleUid = getArguments().getInt(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY);
-        }
+    public static ServiceNotificationsFragment newInstance() {
+        return new ServiceNotificationsFragment();
     }
 
     @Override
@@ -89,23 +72,6 @@ public class ServiceNotificationsFragment extends Fragment {
         setupObservers();
 
         return binding.getRoot();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        binding.buttonEnterService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Add explode transition.
-                Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle();
-
-                Intent intent = new Intent(getActivity(), MaintenanceActivity.class);
-                intent.putExtra(AppDatabase.MAINTENANCE_SCHEDULE_UID_KEY, maintenanceScheduleUid);
-                startActivity(intent, bundle);
-            }
-        });
     }
 
     private void setupObservers() {

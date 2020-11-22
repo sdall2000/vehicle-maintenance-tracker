@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.VehicleChooserActivity">
+    android:layout_height="match_parent">
 
     <TextView
         android:id="@+id/textViewSummary"
@@ -77,10 +76,11 @@
         android:id="@+id/textView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="@string/start_mileage_label"
         app:layout_constraintBottom_toBottomOf="@+id/editTextMileage"
-        app:layout_constraintTop_toTopOf="@+id/editTextMileage"
-        tools:layout_editor_absoluteX="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/editTextMileage" />
 
     <EditText
         android:id="@+id/editTextMileage"
@@ -132,7 +132,6 @@
         android:text="@string/vehicle_submit_info"
         android:textColor="#F44336"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageButton" />
 
