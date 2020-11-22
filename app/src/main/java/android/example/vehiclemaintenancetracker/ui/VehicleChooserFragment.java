@@ -2,6 +2,7 @@ package android.example.vehiclemaintenancetracker.ui;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.example.vehiclemaintenancetracker.R;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -134,6 +136,11 @@ public class VehicleChooserFragment extends Fragment {
 
                     String name = binding.editTextName.getText().toString();
                     String description = binding.editTextDescription.getText().toString();
+
+                    // Remove the soft keyboard.
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                            Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(binding.vehicleChooserFragmentLayout.getWindowToken(), 0);
 
                     // TODO hardcoded until we let the user define/pick a maintenance schedule
                     int maintenanceScheduleUid = 1;
