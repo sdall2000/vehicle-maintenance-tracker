@@ -21,9 +21,9 @@
     <string name="average_label">You average</string>
     <string name="reported_label">Reported:</string>
     <string name="mileage_average_label">miles per year</string>
-    <string name="button_report_mileage">Report Mileage</string>
+    <string name="button_report_mileage">Mileage</string>
     <string name="service_notification_label">Service Notifications</string>
-    <string name="button_enter_service">Enter Service</string>
+    <string name="button_enter_service">Service</string>
     <string name="title_activity_mileage">Mileage</string>
     <string name="enter_mileage_label">Enter Mileage:</string>
     <string name="effective_date_label">Effective Date:</string>
@@ -75,4 +75,5 @@
     <string name="menu_dashboard">Dashboard</string>
     <string name="menu_maintenance_history">Maintenance History</string>
     <string name="nav_drawer_example">Vehicle Maintenance Tracker</string>
+    <string name="no_vehicle_defined">No vehicle defined</string>
 </resources>

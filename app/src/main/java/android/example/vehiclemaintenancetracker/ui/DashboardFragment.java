@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -33,6 +34,8 @@ public class DashboardFragment extends Fragment {
 
     // 86,400,000 milliseconds per day.
     private static final double MS_PER_YEAR = 86_400_000.0 * 365.0;
+
+    private Integer maintenanceScheduleUid;
 
     FragmentDashboardBinding binding;
 
@@ -69,6 +72,26 @@ public class DashboardFragment extends Fragment {
             public void onClick(View view) {
                 // TODO reintroduce transitions.  Maybe can do from the nav graph editor.
                 NavDirections action = DashboardFragmentDirections.actionNavDashboardToNavMileage();
+                Navigation.findNavController(view).navigate(action);
+            }
+        });
+
+        binding.buttonEnterService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (maintenanceScheduleUid != null) {
+                    NavDirections action = DashboardFragmentDirections.actionNavDashboardToNavMaintenance(maintenanceScheduleUid);
+                    Navigation.findNavController(view).navigate(action);
+                } else {
+                    Toast.makeText(getContext(), R.string.no_vehicle_defined, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        binding.buttonHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NavDirections action = DashboardFragmentDirections.actionNavDashboardToNavHistory();
                 Navigation.findNavController(view).navigate(action);
             }
         });
@@ -146,6 +169,8 @@ public class DashboardFragment extends Fragment {
 
                     binding.textViewVehicle.setText(vehicle.getDescription());
 
+                    maintenanceScheduleUid = vehicle.getMaintenanceScheduleUid();
+
                     loadServiceNotificationsFragment(vehicle.getMaintenanceScheduleUid());
                 } else {
                     binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
@@ -163,8 +188,9 @@ public class DashboardFragment extends Fragment {
 
         // TODO handle case where the vehicle uid has changed.
         // Insert service notifications fragment
+        // TODO use navigation component to navigate
         FragmentTransaction ft = getParentFragmentManager().beginTransaction();
-        ServiceNotificationsFragment serviceNotificationsFragment = ServiceNotificationsFragment.newInstance(maintenanceScheduleUid);
+        ServiceNotificationsFragment serviceNotificationsFragment = ServiceNotificationsFragment.newInstance();
         ft.replace(R.id.service_notifications_placeholder, serviceNotificationsFragment);
         ft.commit();
     }
