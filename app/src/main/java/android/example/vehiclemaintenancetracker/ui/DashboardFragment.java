@@ -171,7 +171,7 @@ public class DashboardFragment extends Fragment {
 
                     maintenanceScheduleUid = vehicle.getMaintenanceScheduleUid();
 
-                    loadServiceNotificationsFragment(vehicle.getMaintenanceScheduleUid());
+                    loadServiceNotificationsFragment();
                 } else {
                     binding.textViewVehicle.setText(getString(R.string.no_vehicle_selected));
                     binding.textViewMileageLabel.setVisibility(View.INVISIBLE);
@@ -184,11 +184,10 @@ public class DashboardFragment extends Fragment {
         });
     }
 
-    private void loadServiceNotificationsFragment(int maintenanceScheduleUid) {
+    private void loadServiceNotificationsFragment() {
 
         // TODO handle case where the vehicle uid has changed.
         // Insert service notifications fragment
-        // TODO use navigation component to navigate
         FragmentTransaction ft = getParentFragmentManager().beginTransaction();
         ServiceNotificationsFragment serviceNotificationsFragment = ServiceNotificationsFragment.newInstance();
         ft.replace(R.id.service_notifications_placeholder, serviceNotificationsFragment);
