@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -80,6 +81,11 @@ public class MaintenanceFragment extends Fragment {
                         // Read into a Date object so we can store in the specific format we want.
                         final Date date = dateFormat.parse(dateString);
                         final int mileage = Integer.parseInt(mileageString);
+
+                        // Remove the soft keyboard.
+                        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                                Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(binding.maintenaceFragmentLayout.getWindowToken(), 0);
 
                         MaintenanceScheduleDetailJoined entry = (MaintenanceScheduleDetailJoined) binding.spinnerMaintenance.getSelectedItem();
                         final int maintenanceItemUid = entry.getMaintenanceUid();

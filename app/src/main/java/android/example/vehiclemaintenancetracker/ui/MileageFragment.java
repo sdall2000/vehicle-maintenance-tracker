@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -96,6 +97,11 @@ public class MileageFragment extends Fragment {
                         // Read into a Date object so we can store in the specific format we want.
                         final Date date = dateFormat.parse(dateString);
                         final int mileage = Integer.parseInt(mileageString);
+
+                        // Remove the soft keyboard.
+                        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                                Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(fragmentMileageBinding.editTextMileage.getWindowToken(), 0);
 
                         // Must be done on a background thread.
                         AppExecutor.getInstance().getDbExecutor().execute(new Runnable() {
