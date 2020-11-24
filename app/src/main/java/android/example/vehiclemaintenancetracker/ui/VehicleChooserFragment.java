@@ -69,9 +69,7 @@ public class VehicleChooserFragment extends Fragment {
             }
         });
 
-
         return binding.getRoot();
-//        return inflater.inflate(R.layout.fragment_vehicle_chooser, container, false);
     }
 
     private void loadVehicle() {
