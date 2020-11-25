@@ -1,5 +1,6 @@
 package android.example.vehiclemaintenancetracker.ui;
 
+import android.content.Context;
 import android.example.vehiclemaintenancetracker.data.AppDatabase;
 import android.example.vehiclemaintenancetracker.data.DateConverter;
 import android.example.vehiclemaintenancetracker.data.MaintenanceEntryJoined;
@@ -47,6 +48,8 @@ public class ServiceNotificationsFragment extends Fragment {
 
     private VehicleStartingMileage vehicle;
 
+    private Context context;
+
     public ServiceNotificationsFragment() {
         // Required empty public constructor
     }
@@ -64,6 +67,8 @@ public class ServiceNotificationsFragment extends Fragment {
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        context = getContext();
+
         // Inflate the layout for this fragment
         binding = FragmentServiceNotificationsBinding.inflate(inflater, container, false);
 
@@ -75,11 +80,11 @@ public class ServiceNotificationsFragment extends Fragment {
     }
 
     private void setupObservers() {
-        final AppDatabase appDatabase = AppDatabase.getInstance(getContext());
+        final AppDatabase appDatabase = AppDatabase.getInstance(context);
         // Observe changes to the vehicle.
 
-        LiveData<List<VehicleStartingMileage>> vehicles = appDatabase.getVehicleDao().getVehicleStartingMileageLive();
-        vehicles.observe(getViewLifecycleOwner(), new Observer<List<VehicleStartingMileage>>() {
+        LiveData<List<VehicleStartingMileage>> vehiclesLiveData = appDatabase.getVehicleDao().getVehicleStartingMileageLive();
+        vehiclesLiveData.observe(getViewLifecycleOwner(), new Observer<List<VehicleStartingMileage>>() {
             @Override
             public void onChanged(List<VehicleStartingMileage> vehicles) {
                 // TODO Just track one vehicle for now.
@@ -112,9 +117,9 @@ public class ServiceNotificationsFragment extends Fragment {
 
         // Observe changes to the mileage data.  We need to listen to this separately from the joined
         // query below, because mileage entries may be made without corresponding maintenance entries.
-        LiveData<List<MileageEntry>> mileage = appDatabase.getMileageEntryDao().getAllLiveData();
+        LiveData<List<MileageEntry>> mileageLiveData = appDatabase.getMileageEntryDao().getAllLiveData();
 
-        mileage.observe(getViewLifecycleOwner(), new Observer<List<MileageEntry>>() {
+        mileageLiveData.observe(getViewLifecycleOwner(), new Observer<List<MileageEntry>>() {
             @Override
             public void onChanged(List<MileageEntry> mileageEntries) {
                 ServiceNotificationsFragment.this.mileageEntries = mileageEntries;
@@ -126,9 +131,9 @@ public class ServiceNotificationsFragment extends Fragment {
         });
 
         // Observe changes to joined maintenance/mileage.
-        LiveData<List<MaintenanceEntryJoined>> maintenance = appDatabase.getMaintenanceEntryDao().getAllJoinedLiveData();
+        LiveData<List<MaintenanceEntryJoined>> maintenanceLiveData = appDatabase.getMaintenanceEntryDao().getAllJoinedLiveData();
 
-        maintenance.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntryJoined>>() {
+        maintenanceLiveData.observe(getViewLifecycleOwner(), new Observer<List<MaintenanceEntryJoined>>() {
             @Override
             public void onChanged(List<MaintenanceEntryJoined> maintenanceEntries) {
                 ServiceNotificationsFragment.this.maintenanceEntries = maintenanceEntries;
@@ -161,8 +166,8 @@ public class ServiceNotificationsFragment extends Fragment {
                     currentDate,
                     maintenanceScheduleEntries,
                     maintenanceEntries,
-                    AppDatabase.getMileageWarningThreshold(getContext()),
-                    AppDatabase.getDayWarningThreshold(getContext()),
+                    AppDatabase.getMileageWarningThreshold(context),
+                    AppDatabase.getDayWarningThreshold(context),
                     vehicle.getStartingMileage(),
                     vehicle.getStartingDate().getTime());
 
@@ -234,7 +239,7 @@ public class ServiceNotificationsFragment extends Fragment {
                 }
 
                 if (serviceNotification.getOverallStatus() != Status.Good) {
-                    Styler.styleImageViewStatus(getContext(), binding.imageView, serviceNotification.getOverallStatus());
+                    Styler.styleImageViewStatus(context, binding.imageView, serviceNotification.getOverallStatus());
                 }
             }
         }
