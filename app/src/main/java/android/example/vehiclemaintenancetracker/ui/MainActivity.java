@@ -36,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
             appBarConfiguration = new AppBarConfiguration.Builder(
                     navController.getGraph())
                     .build();
+
+            // Support the "up" button in the action bar.
+            NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         }
     }
 
